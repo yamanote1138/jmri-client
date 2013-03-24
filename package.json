@@ -1,0 +1,21 @@
+{
+	"author": "Chad Francis <discgolfer1138@gmail.com> (www.chadfrancis.com)",
+	"name": "node_jmri",
+  	"description": "node wrapper for JMRI's xmlio service",
+  	"version": "0.0.1",
+	"private": false,
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/discgolfer1138/node_jmri.git"
+	},
+	"main": "index.js",
+	"scripts": {
+		"test": "mocha tests/test.js"
+	},
+	"dependencies": {
+		"request": "*",
+		"utile": "*",
+		"mocha": "*",
+		"chai": "*"
+	}
+}
