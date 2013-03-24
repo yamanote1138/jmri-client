@@ -10,12 +10,15 @@
 	},
 	"main": "index.js",
 	"scripts": {
+		"start": "node index.js",
 		"test": "mocha tests/test.js"
 	},
 	"dependencies": {
+		"chai": "*",
+		"mocha": "*",
+		"prompt": "*",
 		"request": "*",
 		"utile": "*",
-		"mocha": "*",
-		"chai": "*"
+		"xml2json": "*"
 	}
 }
