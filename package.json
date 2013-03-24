@@ -8,10 +8,9 @@
 		"type": "git",
 		"url": "git://github.com/discgolfer1138/node_jmri.git"
 	},
-	"main": "index.js",
+	"main": "./lib/jmri.js",
 	"scripts": {
-		"start": "node index.js",
-		"test": "mocha tests/test.js -t 5000"
+		"test": "mocha ./tests/test.js -t 10000"
 	},
 	"dependencies": {
 		"chai": "*",
