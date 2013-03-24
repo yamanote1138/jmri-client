@@ -11,7 +11,10 @@ prompt.get(['host'], function (err, result) {
 		host: result.host
 	});
 
-	jmriClient.getThrottle(11, function(err, data){
+	jmriClient.getThrottle([11,13], function(err, data){
 		if(!err) console.log(data);
+		jmriClient.getPower(function(err, data){
+			if(!err) console.log(data);
+		});
 	});
 });
