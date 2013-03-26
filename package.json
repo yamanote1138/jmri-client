@@ -6,7 +6,7 @@
 	},
 	"name": "node-jmri",
   	"description": "node wrapper for JMRI's xmlio webservice",
-  	"version": "0.0.2",
+  	"version": "0.0.3",
 	"private": false,
 	"repository": {
 		"type": "git",

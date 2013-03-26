@@ -2,7 +2,7 @@ var jmri = require('../lib/jmri.js'),
 	prompt = require('prompt'),
 	assert = require('chai').assert;
 
-describe('JmriClient', function() {
+describe('JmriClient', function(done) {
 	
 	var jmriClient;
 
@@ -19,11 +19,14 @@ describe('JmriClient', function() {
 		});
 	});
 
-	describe('#getPower()', function() {
-		it('should return xmldata', function() {
+	describe('#getPower()', function(done) {
+		it('should return xmldata', function(done) {
 			jmriClient.getPower(function(err, data){
 				assert.isNull(err, 'err is not null');
 				assert.isNotNull(data, 'data is null');
+				console.log(data);
+				console.log(jmriClient.jmri.power);
+				done();
 			});
 		});
 	});
