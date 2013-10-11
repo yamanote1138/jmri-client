@@ -2,6 +2,7 @@
   "author": "Chad Francis <discgolfer1138@gmail.com> (http://www.thechad.io)",
   "name": "jmri-client",
   "description": "node client to connect to a JMRI xmlio webservice",
+  "homepage": "https://github.com/discgolfer1138/jmri-client",
   "version": "0.1.0",
   "private": false,
   "repository": {

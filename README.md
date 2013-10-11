@@ -6,8 +6,7 @@ this allows basic control of a model railroad layout via DCC
 
 ## Usage
 
-setup, configuration and connect
-
+setup, configure and connect
 ```javascript
 var JmriClient = require('jmri-client');
 
@@ -16,26 +15,21 @@ var client = new JmriClient({
 });
 ```
 
-
 get status of layout power (on or off)
-
 ```javascript
-jmriClient.getPower(function(err, status){
+client.getPower(function(err, status){
 	console.log('the power is ', status);
 	// handle error and/or do stuff
 });
 ```
 
-
-turn layout power on/off
-2=on, 4=off
+turn layout power on/off (2=on, 4=off)
 todo: change to accept 'on', 1, 'off' or 0
 ```javascript
-jmriClient.setPower('1', function(err){
+client.setPower('1', function(err){
 	// handle error and/or do stuff
 });
 ```
-
 
 get full status data for a given address or array of addresses (eg [11, 38])
 ```javascript
@@ -44,7 +38,6 @@ client.getThrottle(addresses, function(err, data){
 });
 ```
 
-
 set speed (0-1) for specified address
 todo: change this to accept value from 0-100
 ```javascript
@@ -52,7 +45,6 @@ client.setThrottleSpeed(address, speed, function(err){
 	// handle error and/or do stuff
 });
 ```
-
 
 set direction for specified address
 use 'true' for forward, 'false' for backward
@@ -63,7 +55,6 @@ client.setThrottleDirection(address, function(err){
 });
 ```
 
-
 set function value specified address and function
 ```javascript
 client.setThrottleFunction(address, functionNumber, value, function(err){
@@ -71,14 +62,12 @@ client.setThrottleFunction(address, functionNumber, value, function(err){
 });
 ```
 
-
 list all turnouts with current status
 ```javascript
-jmriClient.getTurnouts(function(err, data){
+client.getTurnouts(function(err, data){
 	// handle error and/or do stuff
 });
 ```
-
 
 set status of specific turnout by address
 ```javascript
@@ -86,9 +75,3 @@ client.setTurnout(address, value, function(err, data){
 	// handle error and/or do stuff
 });
 ```
-
-
-## Additional Info
-
-full list of motor commands are specified here:
-[http://www.surveyor.com/SRV_protocol.html]
