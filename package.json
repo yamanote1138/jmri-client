@@ -1,31 +1,30 @@
 {
-	"author": {
-		"name": "Chad Francis",
-		"email": "discgolfer1138@gmail.com",
-		"url": "http://www.chadfrancis.com"
-	},
-	"name": "node-jmri",
-  	"description": "node wrapper for JMRI's xmlio webservice",
-  	"version": "0.0.3",
-	"private": false,
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/discgolfer1138/node-jmri.git"
-	},
-	"main": "index.js",
-	"scripts": {
-		"test": "mocha ./tests/test.js -t 10000"
-	},
-	"dependencies": {
-		"chai": "*",
-		"mocha": "*",
-		"prompt": "*",
-		"request": "*",
-		"utile": "*",
-		"xml2json": "*"
-	},
-	"engines": {
-		"node": "*"
-	},
-	"keywords": ["jmri","xmlio","api","railroad","java"]
+  "author": {
+    "name": "Chad Francis",
+    "email": "discgolfer1138@gmail.com",
+    "url": "http://www.thechad.io"
+  },
+  "name": "node-jmri",
+  "description": "node wrapper for JMRI's xmlio webservice",
+  "version": "0.0.3",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/discgolfer1138/node-jmri.git"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "request": "~2.27.0",
+    "xml2json": "~0.3.2"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "keywords": [
+    "jmri",
+    "xmlio",
+    "api",
+    "railroad",
+    "java"
+  ]
 }
