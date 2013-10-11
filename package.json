@@ -1,21 +1,18 @@
 {
-  "author": {
-    "name": "Chad Francis",
-    "email": "discgolfer1138@gmail.com",
-    "url": "http://www.thechad.io"
-  },
-  "name": "node-jmri",
-  "description": "node wrapper for JMRI's xmlio webservice",
+  "author": "Chad Francis <discgolfer1138@gmail.com> (http://www.thechad.io)",
+  "name": "jmri-client",
+  "description": "node client to connect to a JMRI xmlio webservice",
   "version": "0.0.3",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git://github.com/discgolfer1138/node-jmri.git"
+    "url": "git://github.com/discgolfer1138/jmri-client.git"
   },
   "main": "index.js",
   "dependencies": {
     "request": "~2.27.0",
-    "xml2json": "~0.3.2"
+    "xml2json": "~0.3.2",
+    "lodash": "~2.2.1"
   },
   "engines": {
     "node": "*"
@@ -24,7 +21,15 @@
     "jmri",
     "xmlio",
     "api",
-    "railroad",
-    "java"
-  ]
+    "model",
+    "train",
+    "node"
+  ],
+  "bugs": {
+    "url": "https://github.com/discgolfer1138/jmri-client/issues"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "MIT"
 }
