@@ -4,7 +4,7 @@ jmri-client
 node client to connect to a [JMRI](http://jmri.sourceforge.net/) xmlio webservice
 this allows basic control of a model railroad layout via DCC
 
-[![NPM](https://nodei.co/npm/jmri-client.png)](https://nodei.co/npm/jmri-client/)
+[![NPM](https://nodei.co/npm/jmri-client.png?compact=true)](https://nodei.co/npm/jmri-client/)
 
 ## Usage
 
