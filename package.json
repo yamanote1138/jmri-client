@@ -30,7 +30,10 @@
     "url": "https://github.com/discgolfer1138/jmri-client/issues"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha -R spec ./tests/unit.test.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "~1.15.1"
+  }
 }
