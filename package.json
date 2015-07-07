@@ -3,7 +3,7 @@
   "name": "jmri-client",
   "description": "node client to connect to a JMRI xmlio webservice",
   "homepage": "https://github.com/discgolfer1138/jmri-client",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": false,
   "repository": {
     "type": "git",
@@ -11,9 +11,9 @@
   },
   "main": "index.js",
   "dependencies": {
-    "request": "~2.27.0",
-    "xml2json": "~0.3.2",
-    "lodash": "~2.2.1"
+    "lodash": "^3.10.0",
+    "request": "^2.58.0",
+    "xml2json": "^0.7.1"
   },
   "engines": {
     "node": "*"
@@ -22,7 +22,7 @@
     "jmri",
     "xmlio",
     "api",
-    "model",
+    "model railroad",
     "train",
     "node"
   ],
