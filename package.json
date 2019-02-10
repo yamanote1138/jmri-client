@@ -3,7 +3,7 @@
   "name": "jmri-client",
   "description": "node client to connect to a JMRI xmlio webservice",
   "homepage": "https://github.com/yamanote1138/jmri-client",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "private": false,
   "repository": {
     "type": "git",
