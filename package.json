@@ -1,13 +1,13 @@
 {
-  "author": "Chad Francis <discgolfer1138@gmail.com> (http://www.thechad.io)",
+  "author": "Chad Francis <yamanote1138@gmail.com> (http://www.thechad.io)",
   "name": "jmri-client",
   "description": "node client to connect to a JMRI xmlio webservice",
-  "homepage": "https://github.com/discgolfer1138/jmri-client",
+  "homepage": "https://github.com/yamanote1138/jmri-client",
   "version": "0.1.4",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "git://github.com/discgolfer1138/jmri-client.git"
+    "url": "git://github.com/yamanote1138/jmri-client.git"
   },
   "main": "index.js",
   "dependencies": {
@@ -27,7 +27,7 @@
     "node"
   ],
   "bugs": {
-    "url": "https://github.com/discgolfer1138/jmri-client/issues"
+    "url": "https://github.com/yamanote1138/jmri-client/issues"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
