@@ -11,9 +11,9 @@
   },
   "main": "index.js",
   "dependencies": {
-    "lodash": "^3.10.0",
+    "lodash": "^4.17.11",
     "request": "^2.58.0",
-    "xml2json": "^0.7.1"
+    "xml2json": "^0.11.2"
   },
   "engines": {
     "node": ">=8.9.1"
