@@ -1,4 +1,4 @@
-jmri-client ![Build Status](https://travis-ci.org/yamanote1138/jmri-client.png?branch=master)](https://travis-ci.org/yamanote1138/jmri-client)
+jmri-client [![Build Status](https://travis-ci.org/yamanote1138/jmri-client.png?branch=master)](https://travis-ci.org/yamanote1138/jmri-client)
 =========
 
 node client to connect to a [JMRI](http://jmri.sourceforge.net/) xmlio webservice
