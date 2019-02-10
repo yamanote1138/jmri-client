@@ -16,7 +16,7 @@
     "xml2json": "^0.7.1"
   },
   "engines": {
-    "node": "*"
+    "node": ">=8.9.1"
   },
   "keywords": [
     "jmri",
