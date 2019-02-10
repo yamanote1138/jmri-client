@@ -30,7 +30,14 @@
     "url": "https://github.com/yamanote1138/jmri-client/issues"
   },
   "scripts": {
+    "lint": "./node_modules/eslint/bin/eslint.js --ignore-path .gitignore .",
+    "pretest": "eslint --ignore-path .gitignore .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.13.0",
+    "eslint-config-strongloop": "^2.1.0",
+    "eslint-plugin-node": "^8.0.1"
+  }
 }
