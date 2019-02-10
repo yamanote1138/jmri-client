@@ -10,10 +10,11 @@ this allows basic control of a model railroad layout via DCC
 
 setup, configure and connect
 ```javascript
-var JmriClient = require('jmri-client');
+const JmriClient = require('jmri-client');
 
-var client = new JmriClient({
-	host: 'http://domain.com:1138'
+let client = new JmriClient({
+	host: 'http://domain.com',
+  port: 1138
 });
 ```
 
