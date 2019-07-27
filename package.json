@@ -10,29 +10,26 @@
   "name": "jmri-client",
   "description": "node client to connect to a JMRI xmlio webservice",
   "homepage": "https://github.com/yamanote1138/jmri-client",
-  "version": "1.1.0",
+  "version": "1.0.3",
   "private": false,
   "repository": {
     "type": "git",
     "url": "git://github.com/yamanote1138/jmri-client.git"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
-    "request": "^2.58.0",
+    "request": "^2.88.0",
     "xml2json": "^0.11.2"
   },
-  "description": "node client to connect to a JMRI xmlio webservice",
   "devDependencies": {
-    "eslint": "^5.13.0",
+    "eslint": "^6.1.0",
     "eslint-config-strongloop": "^2.1.0",
-    "eslint-plugin-mocha": "^5.2.1",
-    "eslint-plugin-node": "^8.0.1",
-    "mocha": "^5.2.0"
+    "eslint-plugin-mocha": "^6.0.0",
+    "eslint-plugin-node": "^9.1.0",
+    "mocha": "^6.2.0"
   },
   "engines": {
     "node": ">=8.9.1"
   },
-  "homepage": "https://github.com/yamanote1138/jmri-client",
   "keywords": [
     "jmri",
     "xmlio",
@@ -43,16 +40,9 @@
   ],
   "license": "MIT",
   "main": "index.js",
-  "name": "jmri-client",
-  "private": false,
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/yamanote1138/jmri-client.git"
-  },
   "scripts": {
     "lint": "./node_modules/eslint/bin/eslint.js --ignore-path .gitignore .",
     "pretest": "eslint --ignore-path .gitignore .",
     "test": "./node_modules/.bin/mocha -R spec ./tests/unit.test.js"
-  },
-  "version": "1.0.3"
+  }
 }
