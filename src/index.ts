@@ -1,17 +1,28 @@
-'use strict';
+"use strict";
 
 import fetch from "node-fetch";
 import { RequestInit } from "node-fetch";
 // const xml2json = require('xml2json');
 
-type Protocol = 'http' | 'https';
-type FFunction = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'F6' | 'F7' | 'F8' | 'F9' | 'F10' | 'F11' | 'F12'; 
-
+type Protocol = "http" | "https";
+type FFunction =
+  | "F1"
+  | "F2"
+  | "F3"
+  | "F4"
+  | "F5"
+  | "F6"
+  | "F7"
+  | "F8"
+  | "F9"
+  | "F10"
+  | "F11"
+  | "F12";
 
 class JmriClient {
-  protected readonly _protocol:Protocol;
-  protected readonly _host:string;
-  protected readonly _port:number = 80;
+  protected readonly _protocol: Protocol;
+  protected readonly _host: string;
+  protected readonly _port: number = 80;
 
   constructor(protocol: Protocol, host: string, port?: number) {
     this._protocol = protocol;
@@ -22,43 +33,50 @@ class JmriClient {
   }
 
   protected _validate = () => {
-    if(!this._protocol) throw new Error('protocol is empty');
-    if(!this._host) throw new Error('host is empty');
-    if(this._port < 0 || this._port > 65535) throw new Error('port is out of range');
+    if (!this._protocol) throw new Error("protocol is empty");
+    if (!this._host) throw new Error("host is empty");
+    if (this._port < 0 || this._port > 65535)
+      throw new Error("port is out of range");
   };
 
-  protected _getValue = async (type:string) => {
-    return await this._send('GET', type);
-  }
+  protected _getValue = async (type: string) => {
+    return await this._send("GET", type);
+  };
 
-  protected _setValue = async (type:string, data:object) => {
-    return await this._send('POST', type, data);
-  }
+  protected _setValue = async (type: string, data: object) => {
+    return await this._send("POST", type, data);
+  };
 
-  protected _send = async (method:string, type:string, data?:object) => {
+  protected _send = async (method: string, type: string, data?: object) => {
     const uri = `${this._protocol}://${this._host}:${this._port}/json/${type}`;
-    const options:RequestInit = {
-      method: method
-    }
-    if(data !== undefined){
-      options.body = JSON.stringify(data),
-      options.headers = {
-        'Content-Type': 'application/json; charset=utf-8'
-      }
+    const options: RequestInit = {
+      method: method,
+    };
+    if (data !== undefined) {
+      (options.body = JSON.stringify(data)),
+        (options.headers = {
+          "Content-Type": "application/json; charset=utf-8",
+        });
     }
 
-    return await fetch(uri, options);
-  }
+    const response = await fetch(uri, options);
+
+    return await response.json();
+  };
 
   getPower = async () => {
-    return await this._getValue('power');
-  }
+    return await this._getValue("power");
+  };
 
-  setPower = async (isOn:boolean) => {
-    return await this._setValue('power', {
-      value: (isOn) ? 2:4
+  setPower = async (isOn: boolean) => {
+    return await this._setValue("power", {
+      state: isOn ? 2 : 4,
     });
-  }
+  };
+
+  getRoster = async () => {
+    return await this._getValue("roster");
+  };
 
   /*
   getThrottle = async (addresses:Array<string>) => {
@@ -94,7 +112,6 @@ class JmriClient {
     return await this._send(xmldata);
   }
   */
-  
 }
 
 export { JmriClient };
