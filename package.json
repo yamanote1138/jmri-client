@@ -1,6 +1,6 @@
 {
   "name": "jmri-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "node client to connect to a JMRI xmlio webservice",
   "main": "dist/index.js",
   "type": "module",
