@@ -1,23 +1,22 @@
-"use strict";
+'use strict';
 
-import fetch from "node-fetch";
-import { RequestInit } from "node-fetch";
+import axios, { AxiosRequestConfig } from 'axios';
 // const xml2json = require('xml2json');
 
-type Protocol = "http" | "https";
+type Protocol = 'http' | 'https';
 type FFunction =
-  | "F1"
-  | "F2"
-  | "F3"
-  | "F4"
-  | "F5"
-  | "F6"
-  | "F7"
-  | "F8"
-  | "F9"
-  | "F10"
-  | "F11"
-  | "F12";
+  | 'F1'
+  | 'F2'
+  | 'F3'
+  | 'F4'
+  | 'F5'
+  | 'F6'
+  | 'F7'
+  | 'F8'
+  | 'F9'
+  | 'F10'
+  | 'F11'
+  | 'F12';
 
 class JmriClient {
   protected readonly _protocol: Protocol;
@@ -33,49 +32,48 @@ class JmriClient {
   }
 
   protected _validate = () => {
-    if (!this._protocol) throw new Error("protocol is empty");
-    if (!this._host) throw new Error("host is empty");
+    if (!this._protocol) throw new Error('protocol is empty');
+    if (!this._host) throw new Error('host is empty');
     if (this._port < 0 || this._port > 65535)
-      throw new Error("port is out of range");
+      throw new Error('port is out of range');
   };
 
-  protected _getValue = async (type: string) => {
-    return await this._send("GET", type);
-  };
+  protected _getValue = async (type:string) => {
+    return await this._send('GET', type);
+  }
 
   protected _setValue = async (type: string, data: object) => {
-    return await this._send("POST", type, data);
+    return await this._send('POST', type, data);
   };
 
-  protected _send = async (method: string, type: string, data?: object) => {
-    const uri = `${this._protocol}://${this._host}:${this._port}/json/${type}`;
-    const options: RequestInit = {
-      method: method,
-    };
-    if (data !== undefined) {
-      (options.body = JSON.stringify(data)),
-        (options.headers = {
-          "Content-Type": "application/json; charset=utf-8",
-        });
+  protected _send = async (method:string, type:string, data?:object) => {
+		const config:AxiosRequestConfig = {
+			url: `${this._protocol}://${this._host}:${this._port}/json/${type}`
+		};
+		config.method = method;
+
+    if(data !== undefined){
+      config.data=data;
+      config.headers = {
+        'Content-type':'application/json; charset=utf-8'
+      };
     }
 
-    const response = await fetch(uri, options);
-
-    return await response.json();
-  };
+    return await axios.request(config);
+  }
 
   getPower = async () => {
-    return await this._getValue("power");
+    return await this._getValue('power');
   };
 
   setPower = async (isOn: boolean) => {
-    return await this._setValue("power", {
+    return await this._setValue('power', {
       state: isOn ? 2 : 4,
     });
   };
 
   getRoster = async () => {
-    return await this._getValue("roster");
+    return await this._getValue('roster');
   };
 
   /*
