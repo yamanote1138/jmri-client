@@ -1,5 +1,3 @@
-jest.mock("node-fetch");
-
 import { JmriClient } from '../../src/index'
 
 describe('Constructor', () => {

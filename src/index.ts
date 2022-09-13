@@ -1,7 +1,6 @@
 'use strict';
 
-import fetch from "node-fetch";
-import { RequestInit } from "node-fetch";
+import axios, { AxiosRequestConfig } from "axios";
 // const xml2json = require('xml2json');
 
 type Protocol = 'http' | 'https';
@@ -36,18 +35,19 @@ class JmriClient {
   }
 
   protected _send = async (method:string, type:string, data?:object) => {
-    const uri = `${this._protocol}://${this._host}:${this._port}/json/${type}`;
-    const options:RequestInit = {
-      method: method
-    }
+		const config:AxiosRequestConfig = {
+			url: `${this._protocol}://${this._host}:${this._port}/json/${type}`
+		};
+		config.method = method;
+
     if(data !== undefined){
-      options.body = JSON.stringify(data),
-      options.headers = {
-        'Content-Type': 'application/json; charset=utf-8'
-      }
+      config.data=data;
+      config.headers = {
+        'Content-type':'application/json; charset=utf-8'
+      };
     }
 
-    return await fetch(uri, options);
+    return await axios.request(config);
   }
 
   getPower = async () => {
@@ -58,6 +58,10 @@ class JmriClient {
     return await this._setValue('power', {
       value: (isOn) ? 2:4
     });
+  }
+
+  getRoster = async () => {
+    return await this._getValue('roster');
   }
 
   /*

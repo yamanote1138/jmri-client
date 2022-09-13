@@ -1,1 +1,1 @@
-module.exports = require('./lib/jmriClient');
+module.exports = require("./dist");
