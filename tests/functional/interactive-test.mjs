@@ -200,6 +200,9 @@ async function runTest() {
     await client.powerOff();
     console.log('✓ Track power OFF');
 
+    // Wait a moment to ensure power off command is processed
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // Success
     console.log('\n' + '='.repeat(70));
     console.log('✓ ALL TESTS COMPLETED SUCCESSFULLY');

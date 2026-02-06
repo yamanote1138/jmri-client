@@ -106,16 +106,12 @@ client.on('reconnecting', (attempt, delay) => {
 npm test
 ```
 
-**Functional Tests** (requires JMRI hardware):
+**Functional Test** (requires JMRI hardware):
 ```bash
-# Interactive test with prompts (recommended)
 node tests/functional/interactive-test.mjs
-
-# Automated test with timed pauses
-node tests/functional/demo-throttle.mjs
 ```
 
-⚠️ **Safety**: All functional tests include automatic power-off on exit, errors, and Ctrl+C.
+⚠️ **Safety**: Includes automatic power-off on exit, errors, and Ctrl+C.
 
 See **[Testing Guide](docs/TESTING.md)** for complete instructions and safety procedures.
 

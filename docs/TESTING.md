@@ -22,11 +22,11 @@ When testing with physical hardware:
   - Power-off on Ctrl+C interrupt
   - Option to type "exit" in interactive tests
 
-## Test Scripts
+## Functional Test
 
-### 1. Interactive Test (Recommended)
+### Interactive Test
 
-**Purpose**: Streamlined interactive test with configuration prompts
+**Purpose**: Complete functional test with hardware verification
 
 **File**: `tests/functional/interactive-test.mjs`
 
@@ -61,114 +61,6 @@ node tests/functional/interactive-test.mjs
 15. Power OFF
 
 **Expected Duration**: 3-4 minutes
-
-### 2. Interactive Demo (Extended)
-
-**Purpose**: Step through each operation with manual verification
-
-**File**: `tests/functional/interactive-demo.mjs`
-
-**Features**:
-- Prompts before each operation
-- Allows you to verify physical locomotive behavior
-- Type "exit" at any prompt to safely shut down
-- Press Ctrl+C at any time for emergency stop
-- Automatically powers off track on completion or error
-
-**How to Run**:
-
-```bash
-# From the project root directory
-node tests/functional/interactive-demo.mjs
-```
-
-**Test Sequence**:
-1. Power Off - verify track power is off
-2. Power On - verify power indicators lit
-3. Acquire Throttle - establishes control of locomotive
-4. Forward at 15% - locomotive moves forward slowly
-5. Increase to 25% - locomotive moves faster
-6. Maximum Speed (30%) - locomotive at max test speed
-7. Slow Down to 15% - locomotive slows
-8. Stop - locomotive stops
-9. Reverse at 20% - locomotive moves in reverse
-10. Stop - locomotive stops
-11. Forward Direction - change direction (while stopped)
-12. Headlight On (F0) - turns on headlight
-13. Horn (F2) - sounds horn
-14. Headlight Off - turns off headlight
-15. Quick Movement Test - brief forward movement
-16. Release Throttle - releases control
-17. Power Off - turns off track power
-
-**Expected Duration**: 5-10 minutes (depending on verification time)
-
-### 2. Automated Demo
-
-**Purpose**: Automated test with timed pauses (no interaction required)
-
-**File**: `tests/functional/demo-throttle.mjs`
-
-**Features**:
-- Runs automatically with built-in delays
-- Good for quick verification or demonstrations
-- Shows real-time speed update events
-- Powers off on completion or error
-- Ctrl+C for emergency stop
-
-**How to Run**:
-
-```bash
-node tests/functional/demo-throttle.mjs
-```
-
-**Duration**: ~45 seconds
-
-### 3. Cleanup Utility
-
-**Purpose**: Clean up after crashed tests
-
-**File**: `tests/functional/cleanup-throttles.mjs`
-
-**Features**:
-- Releases any active throttles from this client
-- Turns power OFF
-- Safe to run anytime
-
-**How to Run**:
-
-```bash
-node tests/functional/cleanup-throttles.mjs
-```
-
-**When to use**:
-- After a test crashes without completing
-- Before running tests if you suspect stale throttles
-- As a safety measure between test runs
-
-**Note**: This only clears throttles created by this client. To clear ALL throttles in JMRI, restart JMRI or use Tools → Throttles → Release All in JMRI.
-
-### 4. Debug Scripts
-
-For troubleshooting WebSocket communication:
-
-**Basic Throttle Debug**:
-```bash
-node tests/functional/debug-throttle2.mjs
-```
-Shows all WebSocket messages for throttle acquisition and release.
-
-**Throttle Control Debug**:
-```bash
-node tests/functional/debug-throttle-control.mjs
-```
-Shows all WebSocket messages for speed, direction, and function commands.
-
-**Simple Connection Test**:
-```bash
-node tests/functional/test-connection.mjs
-```
-Basic connectivity test with power control and roster retrieval.
 
 ## Configuration
 
