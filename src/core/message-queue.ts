@@ -2,7 +2,7 @@
  * Message queue for offline message handling
  */
 
-import { JmriMessage } from '../types/jmri-messages';
+import { JmriMessage } from '../types/jmri-messages.js';
 
 /**
  * Queue for storing messages when disconnected

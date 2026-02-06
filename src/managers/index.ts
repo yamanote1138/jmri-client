@@ -2,6 +2,6 @@
  * Manager exports
  */
 
-export * from './power-manager';
-export * from './roster-manager';
-export * from './throttle-manager';
+export * from './power-manager.js';
+export * from './roster-manager.js';
+export * from './throttle-manager.js';

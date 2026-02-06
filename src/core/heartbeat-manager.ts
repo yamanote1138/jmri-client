@@ -3,7 +3,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { HeartbeatOptions } from '../types/client-options';
+import { HeartbeatOptions } from '../types/client-options.js';
 
 /**
  * Manages WebSocket heartbeat via ping/pong

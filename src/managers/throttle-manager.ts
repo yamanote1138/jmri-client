@@ -3,15 +3,15 @@
  */
 
 import { EventEmitter } from 'events';
-import { WebSocketClient } from '../core/websocket-client';
-import { ThrottleMessage, ThrottleData } from '../types/jmri-messages';
+import { WebSocketClient } from '../core/websocket-client.js';
+import { ThrottleMessage, ThrottleData } from '../types/jmri-messages.js';
 import {
   ThrottleAcquireOptions,
   ThrottleFunctionKey,
   ThrottleState,
   isThrottleFunctionKey,
   isValidSpeed
-} from '../types/throttle';
+} from '../types/throttle.js';
 
 /**
  * Manages multiple throttles
@@ -19,10 +19,13 @@ import {
 export class ThrottleManager extends EventEmitter {
   private client: WebSocketClient;
   private throttles: Map<string, ThrottleState> = new Map();
+  private clientId: string;
 
   constructor(client: WebSocketClient) {
     super();
     this.client = client;
+    // Generate a unique client ID
+    this.clientId = `jmri-client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Listen for throttle updates
     this.client.on('update', (message: any) => {
@@ -41,20 +44,25 @@ export class ThrottleManager extends EventEmitter {
    * Acquire a throttle for a locomotive
    */
   async acquireThrottle(options: ThrottleAcquireOptions): Promise<string> {
-    const message: ThrottleMessage = {
+    // Generate a unique throttle name using client ID and address
+    const throttleName = `${this.clientId}-${options.address}`;
+
+    const message: any = {
       type: 'throttle',
       data: {
+        name: throttleName,
         address: options.address
       }
     };
 
     const response = await this.client.request<ThrottleMessage>(message);
 
-    if (!response.data?.throttle) {
+    // JMRI returns the throttle ID in the "throttle" field, or we can use our name
+    const throttleId = response.data?.throttle || throttleName;
+
+    if (!throttleId) {
       throw new Error('Failed to acquire throttle: no throttle ID returned');
     }
-
-    const throttleId = response.data.throttle;
 
     // Initialize throttle state
     const state: ThrottleState = {
@@ -116,7 +124,8 @@ export class ThrottleManager extends EventEmitter {
       }
     };
 
-    await this.client.request<ThrottleMessage>(message);
+    // JMRI doesn't send responses for throttle control commands, just send
+    this.client.send(message);
 
     state.speed = speed;
   }
@@ -138,7 +147,8 @@ export class ThrottleManager extends EventEmitter {
       }
     };
 
-    await this.client.request<ThrottleMessage>(message);
+    // JMRI doesn't send responses for throttle control commands, just send
+    this.client.send(message);
 
     state.forward = forward;
   }
@@ -166,7 +176,8 @@ export class ThrottleManager extends EventEmitter {
       data
     };
 
-    await this.client.request<ThrottleMessage>(message);
+    // JMRI doesn't send responses for throttle control commands, just send
+    this.client.send(message);
 
     state.functions.set(functionKey, value);
   }

@@ -3,8 +3,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { ReconnectionOptions } from '../types/client-options';
-import { calculateBackoffDelay, shouldReconnect } from '../utils/exponential-backoff';
+import { ReconnectionOptions } from '../types/client-options.js';
+import { calculateBackoffDelay, shouldReconnect } from '../utils/exponential-backoff.js';
 
 /**
  * Manages automatic reconnection with exponential backoff

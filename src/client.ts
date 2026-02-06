@@ -3,14 +3,14 @@
  */
 
 import { EventEmitter } from 'events';
-import { WebSocketClient } from './core/websocket-client';
-import { PowerManager } from './managers/power-manager';
-import { RosterManager } from './managers/roster-manager';
-import { ThrottleManager } from './managers/throttle-manager';
-import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options';
-import { PowerState, RosterEntry } from './types/jmri-messages';
-import { ConnectionState } from './types/events';
-import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle';
+import { WebSocketClient } from './core/websocket-client.js';
+import { PowerManager } from './managers/power-manager.js';
+import { RosterManager } from './managers/roster-manager.js';
+import { ThrottleManager } from './managers/throttle-manager.js';
+import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
+import { PowerState, RosterEntry } from './types/jmri-messages.js';
+import { ConnectionState } from './types/events.js';
+import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
 /**
  * JMRI WebSocket Client

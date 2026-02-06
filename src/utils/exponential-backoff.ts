@@ -2,7 +2,7 @@
  * Exponential backoff calculator with jitter
  */
 
-import { ReconnectionOptions } from '../types/client-options';
+import { ReconnectionOptions } from '../types/client-options.js';
 
 /**
  * Calculate next reconnection delay using exponential backoff

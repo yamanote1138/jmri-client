@@ -4,14 +4,14 @@
 
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
-import { JmriClientOptions } from '../types/client-options';
-import { JmriMessage, AnyJmriMessage, GoodbyeMessage } from '../types/jmri-messages';
-import { ConnectionState } from '../types/events';
-import { MessageIdGenerator } from '../utils/message-id';
-import { MessageQueue } from './message-queue';
-import { ConnectionStateManager } from './connection-state-manager';
-import { HeartbeatManager } from './heartbeat-manager';
-import { ReconnectionManager } from './reconnection-manager';
+import { JmriClientOptions } from '../types/client-options.js';
+import { JmriMessage, AnyJmriMessage, GoodbyeMessage } from '../types/jmri-messages.js';
+import { ConnectionState } from '../types/events.js';
+import { MessageIdGenerator } from '../utils/message-id.js';
+import { MessageQueue } from './message-queue.js';
+import { ConnectionStateManager } from './connection-state-manager.js';
+import { HeartbeatManager } from './heartbeat-manager.js';
+import { ReconnectionManager } from './reconnection-manager.js';
 
 /**
  * Pending request tracking
@@ -20,6 +20,8 @@ interface PendingRequest {
   resolve: (value: any) => void;
   reject: (error: Error) => void;
   timeout: NodeJS.Timeout;
+  messageType?: string;
+  matchKey?: string;
 }
 
 /**
@@ -46,7 +48,7 @@ export class WebSocketClient extends EventEmitter {
   constructor(options: JmriClientOptions) {
     super();
     this.options = options;
-    this.url = `${options.protocol}://${options.host}:${options.port}/json`;
+    this.url = `${options.protocol}://${options.host}:${options.port}/json/`;
 
     // Initialize sub-managers
     this.messageIdGen = new MessageIdGenerator();
@@ -129,6 +131,11 @@ export class WebSocketClient extends EventEmitter {
    * Disconnect from JMRI WebSocket server
    */
   async disconnect(): Promise<void> {
+    // Already disconnected, nothing to do
+    if (this.stateManager.isDisconnected()) {
+      return;
+    }
+
     this.isManualDisconnect = true;
     this.reconnectionManager.stop();
     this.heartbeatManager.stop();
@@ -151,7 +158,9 @@ export class WebSocketClient extends EventEmitter {
     // Reject all pending requests
     this.rejectAllPendingRequests(new Error('Client disconnected'));
 
-    this.stateManager.transition(ConnectionState.DISCONNECTED);
+    if (!this.stateManager.isDisconnected()) {
+      this.stateManager.transition(ConnectionState.DISCONNECTED);
+    }
   }
 
   /**
@@ -189,8 +198,20 @@ export class WebSocketClient extends EventEmitter {
         reject(new Error(`Request timeout after ${timeoutMs}ms`));
       }, timeoutMs);
 
-      // Track pending request
-      this.pendingRequests.set(id, { resolve, reject, timeout: timeoutHandle });
+      // Track pending request with metadata for matching responses without IDs
+      const pendingRequest: PendingRequest = {
+        resolve,
+        reject,
+        timeout: timeoutHandle,
+        messageType: message.type
+      };
+
+      // For throttle requests, store the throttle name for matching
+      if (message.type === 'throttle' && message.data && 'name' in message.data) {
+        pendingRequest.matchKey = (message.data as any).name;
+      }
+
+      this.pendingRequests.set(id, pendingRequest);
 
       // Send message
       try {
@@ -264,6 +285,32 @@ export class WebSocketClient extends EventEmitter {
           this.pendingRequests.delete(message.id);
           pending.resolve(message);
           return;
+        }
+      }
+
+      // Handle responses without ID (like throttle responses from JMRI)
+      // Match by message type and data
+      if (message.id === undefined) {
+        for (const [id, pending] of this.pendingRequests.entries()) {
+          // Match by type
+          if (pending.messageType === message.type) {
+            // For throttle messages, also match by throttle name
+            if (message.type === 'throttle' && pending.matchKey) {
+              const throttleName = (message.data as any)?.throttle || (message.data as any)?.name;
+              if (throttleName === pending.matchKey) {
+                clearTimeout(pending.timeout);
+                this.pendingRequests.delete(id);
+                pending.resolve(message);
+                return;
+              }
+            } else {
+              // For other message types, just match by type
+              clearTimeout(pending.timeout);
+              this.pendingRequests.delete(id);
+              pending.resolve(message);
+              return;
+            }
+          }
         }
       }
 

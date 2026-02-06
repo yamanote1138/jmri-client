@@ -2,8 +2,8 @@
  * Roster management
  */
 
-import { WebSocketClient } from '../core/websocket-client';
-import { RosterMessage, RosterEntry, RosterData } from '../types/jmri-messages';
+import { WebSocketClient } from '../core/websocket-client.js';
+import { RosterMessage, RosterEntry, RosterData } from '../types/jmri-messages.js';
 
 /**
  * Manages locomotive roster

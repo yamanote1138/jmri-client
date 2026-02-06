@@ -2,5 +2,5 @@
  * Utility functions
  */
 
-export * from './message-id';
-export * from './exponential-backoff';
+export * from './message-id.js';
+export * from './exponential-backoff.js';

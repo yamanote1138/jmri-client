@@ -2,8 +2,8 @@
  * Event types for JmriClient EventEmitter
  */
 
-import { PowerState } from './jmri-messages';
-import { ThrottleData } from './jmri-messages';
+import { PowerState } from './jmri-messages.js';
+import { ThrottleData } from './jmri-messages.js';
 
 /**
  * Connection states

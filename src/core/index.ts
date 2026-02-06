@@ -2,8 +2,8 @@
  * Core infrastructure exports
  */
 
-export * from './websocket-client';
-export * from './connection-state-manager';
-export * from './reconnection-manager';
-export * from './heartbeat-manager';
-export * from './message-queue';
+export * from './websocket-client.js';
+export * from './connection-state-manager.js';
+export * from './reconnection-manager.js';
+export * from './heartbeat-manager.js';
+export * from './message-queue.js';

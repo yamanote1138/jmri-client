@@ -3,8 +3,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { WebSocketClient } from '../core/websocket-client';
-import { PowerState, PowerMessage } from '../types/jmri-messages';
+import { WebSocketClient } from '../core/websocket-client.js';
+import { PowerState, PowerMessage } from '../types/jmri-messages.js';
 
 /**
  * Manages track power control

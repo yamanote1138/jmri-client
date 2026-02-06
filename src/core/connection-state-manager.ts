@@ -3,7 +3,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { ConnectionState } from '../types/events';
+import { ConnectionState } from '../types/events.js';
 
 /**
  * Valid state transitions

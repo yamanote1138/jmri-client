@@ -3,7 +3,7 @@
  * WebSocket client for JMRI with real-time updates and throttle control
  */
 
-export { JmriClient } from './client';
+export { JmriClient } from './client.js';
 
 // Export types
 export {
@@ -29,7 +29,7 @@ export {
   ThrottleAcquireOptions,
   ThrottleFunctionKey,
   ThrottleState
-} from './types';
+} from './types/index.js';
 
 // Export utility functions if needed
-export { isThrottleFunctionKey, isValidSpeed } from './types/throttle';
+export { isThrottleFunctionKey, isValidSpeed } from './types/throttle.js';

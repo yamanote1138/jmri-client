@@ -84,21 +84,21 @@ await new Promise(resolve => setTimeout(resolve, 1000));
 console.log('');
 console.log('Testing throttle control...');
 
-// Test speed control
+// Test speed control (max 30% for safety)
+console.log('Setting speed to 0.15 (15%)...');
+await client.setThrottleSpeed(throttleId, 0.15);
+await new Promise(resolve => setTimeout(resolve, 2000));
+
 console.log('Setting speed to 0.25 (25%)...');
 await client.setThrottleSpeed(throttleId, 0.25);
 await new Promise(resolve => setTimeout(resolve, 2000));
 
-console.log('Setting speed to 0.5 (50%)...');
-await client.setThrottleSpeed(throttleId, 0.5);
+console.log('Setting speed to 0.30 (30%)...');
+await client.setThrottleSpeed(throttleId, 0.30);
 await new Promise(resolve => setTimeout(resolve, 2000));
 
-console.log('Setting speed to 0.75 (75%)...');
-await client.setThrottleSpeed(throttleId, 0.75);
-await new Promise(resolve => setTimeout(resolve, 2000));
-
-console.log('Slowing down to 0.25...');
-await client.setThrottleSpeed(throttleId, 0.25);
+console.log('Slowing down to 0.15...');
+await client.setThrottleSpeed(throttleId, 0.15);
 await new Promise(resolve => setTimeout(resolve, 2000));
 
 console.log('Emergency stop!');
@@ -111,8 +111,8 @@ console.log('Setting direction to reverse...');
 await client.setThrottleDirection(throttleId, false);
 await new Promise(resolve => setTimeout(resolve, 500));
 
-console.log('Setting speed to 0.3 (reverse)...');
-await client.setThrottleSpeed(throttleId, 0.3);
+console.log('Setting speed to 0.2 (reverse - 20%)...');
+await client.setThrottleSpeed(throttleId, 0.2);
 await new Promise(resolve => setTimeout(resolve, 2000));
 
 console.log('Stopping...');
