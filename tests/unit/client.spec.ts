@@ -262,4 +262,82 @@ describe('JmriClient', () => {
       expect(fullClient).toBeInstanceOf(JmriClient);
     });
   });
+
+  describe('mock mode integration', () => {
+    let mockClient: JmriClient;
+
+    beforeEach(async () => {
+      mockClient = new JmriClient({
+        host: 'localhost',
+        port: 12080,
+        autoConnect: false,
+        mock: {
+          enabled: true,
+          responseDelay: 0
+        }
+      });
+
+      await mockClient.connect();
+    });
+
+    afterEach(async () => {
+      if (mockClient.isConnected()) {
+        await mockClient.disconnect();
+      }
+    });
+
+    it('should emit throttle:updated event after setThrottleFunction in mock mode', async () => {
+      const throttleId = await mockClient.acquireThrottle({ address: 3 });
+
+      const eventPromise = new Promise((resolve) => {
+        mockClient.on('throttle:updated', (id, data) => {
+          resolve({ id, data });
+        });
+      });
+
+      await mockClient.setThrottleFunction(throttleId, 'F0', true);
+
+      const result = await eventPromise;
+      expect(result).toEqual({
+        id: throttleId,
+        data: { F0: true }
+      });
+    });
+
+    it('should emit throttle:updated event after setThrottleSpeed in mock mode', async () => {
+      const throttleId = await mockClient.acquireThrottle({ address: 3 });
+
+      const eventPromise = new Promise((resolve) => {
+        mockClient.on('throttle:updated', (id, data) => {
+          resolve({ id, data });
+        });
+      });
+
+      await mockClient.setThrottleSpeed(throttleId, 0.5);
+
+      const result = await eventPromise;
+      expect(result).toEqual({
+        id: throttleId,
+        data: { speed: 0.5 }
+      });
+    });
+
+    it('should emit throttle:updated event after setThrottleDirection in mock mode', async () => {
+      const throttleId = await mockClient.acquireThrottle({ address: 3 });
+
+      const eventPromise = new Promise((resolve) => {
+        mockClient.on('throttle:updated', (id, data) => {
+          resolve({ id, data });
+        });
+      });
+
+      await mockClient.setThrottleDirection(throttleId, false);
+
+      const result = await eventPromise;
+      expect(result).toEqual({
+        id: throttleId,
+        data: { forward: false }
+      });
+    });
+  });
 });
