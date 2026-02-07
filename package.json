@@ -19,7 +19,8 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.json --declaration --emitDeclarationOnly --outDir dist/types",
     "test": "jest --no-cache --coverage",
-    "functional": "node ./tests/functional/interactive-test.mjs"
+    "functional": "node ./tests/functional/interactive-test.mjs",
+    "demo:mock": "node ./examples/mock-demo.mjs"
   },
   "keywords": [
     "jmri",

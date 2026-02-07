@@ -12,6 +12,7 @@ import { MessageQueue } from './message-queue.js';
 import { ConnectionStateManager } from './connection-state-manager.js';
 import { HeartbeatManager } from './heartbeat-manager.js';
 import { ReconnectionManager } from './reconnection-manager.js';
+import { MockResponseManager } from '../mocks/index.js';
 
 /**
  * Pending request tracking
@@ -38,6 +39,7 @@ export class WebSocketClient extends EventEmitter {
   private stateManager: ConnectionStateManager;
   private heartbeatManager: HeartbeatManager;
   private reconnectionManager: ReconnectionManager;
+  private mockManager?: MockResponseManager;
 
   // Request/response tracking
   private pendingRequests: Map<number, PendingRequest> = new Map();
@@ -56,6 +58,13 @@ export class WebSocketClient extends EventEmitter {
     this.stateManager = new ConnectionStateManager();
     this.heartbeatManager = new HeartbeatManager(options.heartbeat);
     this.reconnectionManager = new ReconnectionManager(options.reconnection);
+
+    // Initialize mock manager if mock mode is enabled
+    if (options.mock.enabled) {
+      this.mockManager = new MockResponseManager({
+        responseDelay: options.mock.responseDelay
+      });
+    }
 
     // Wire up state manager events
     this.stateManager.on('stateChanged', (newState: ConnectionState, prevState: ConnectionState) => {
@@ -87,7 +96,7 @@ export class WebSocketClient extends EventEmitter {
   }
 
   /**
-   * Connect to JMRI WebSocket server
+   * Connect to JMRI WebSocket server (or mock)
    */
   async connect(): Promise<void> {
     if (this.stateManager.isConnected() || this.stateManager.isConnecting()) {
@@ -97,6 +106,12 @@ export class WebSocketClient extends EventEmitter {
     this.isManualDisconnect = false;
     this.stateManager.transition(ConnectionState.CONNECTING);
 
+    // Mock mode - simulate connection
+    if (this.mockManager) {
+      return this.connectMock();
+    }
+
+    // Real WebSocket connection
     return new Promise((resolve, reject) => {
       try {
         this.ws = new WebSocket(this.url);
@@ -125,6 +140,23 @@ export class WebSocketClient extends EventEmitter {
         reject(error);
       }
     });
+  }
+
+  /**
+   * Simulate connection in mock mode
+   */
+  private async connectMock(): Promise<void> {
+    // Simulate connection delay
+    await this.delay(10);
+
+    // Transition to connected state
+    this.handleOpen();
+
+    // Send hello message in mock mode
+    const helloResponse = await this.mockManager!.getMockResponse({ type: 'hello' });
+    if (helloResponse) {
+      this.emit('message:received', helloResponse);
+    }
   }
 
   /**
@@ -164,12 +196,19 @@ export class WebSocketClient extends EventEmitter {
   }
 
   /**
-   * Send message to JMRI
+   * Send message to JMRI (or mock)
    */
   send(message: JmriMessage): void {
     if (!this.stateManager.isConnected()) {
       // Queue message for later
       this.messageQueue.enqueue(message);
+      return;
+    }
+
+    // Mock mode - send doesn't need to do anything
+    // Responses are generated in request()
+    if (this.mockManager) {
+      this.emit('message:sent', message);
       return;
     }
 
@@ -183,9 +222,20 @@ export class WebSocketClient extends EventEmitter {
   }
 
   /**
-   * Send request and wait for response
+   * Send request and wait for response (or get mock response)
    */
   async request<T = any>(message: JmriMessage, timeout?: number): Promise<T> {
+    // Mock mode - get response from mock manager
+    if (this.mockManager) {
+      const response = await this.mockManager.getMockResponse(message);
+      this.emit('message:sent', message);
+      if (response) {
+        this.emit('message:received', response);
+      }
+      return response as T;
+    }
+
+    // Real mode - send request and wait for response
     // Assign message ID
     const id = this.messageIdGen.next();
     message.id = id;
@@ -388,5 +438,12 @@ export class WebSocketClient extends EventEmitter {
       pending.reject(error);
     }
     this.pendingRequests.clear();
+  }
+
+  /**
+   * Delay helper
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

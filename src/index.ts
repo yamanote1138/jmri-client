@@ -12,6 +12,7 @@ export {
   PartialClientOptions,
   ReconnectionOptions,
   HeartbeatOptions,
+  MockOptions,
 
   // JMRI message types
   PowerState,
@@ -33,3 +34,7 @@ export {
 
 // Export utility functions if needed
 export { isThrottleFunctionKey, isValidSpeed } from './types/throttle.js';
+
+// Export mock system for testing and demo purposes
+export { MockResponseManager, mockResponseManager, mockData } from './mocks/index.js';
+export type { MockResponseManagerOptions } from './mocks/index.js';

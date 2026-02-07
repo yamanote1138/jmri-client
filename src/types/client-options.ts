@@ -59,6 +59,23 @@ export interface HeartbeatOptions {
 }
 
 /**
+ * Mock mode options
+ */
+export interface MockOptions {
+  /**
+   * Enable mock mode (default: false)
+   * When enabled, all responses are generated from mock data instead of a real JMRI server
+   */
+  enabled: boolean;
+
+  /**
+   * Delay in milliseconds before returning mock responses (default: 50)
+   * Simulates network latency. Set to 0 for instant responses.
+   */
+  responseDelay: number;
+}
+
+/**
  * JMRI client configuration options
  */
 export interface JmriClientOptions {
@@ -101,6 +118,12 @@ export interface JmriClientOptions {
    * Default timeout for request/response in milliseconds (default: 10000)
    */
   requestTimeout: number;
+
+  /**
+   * Mock mode configuration (default: disabled)
+   * Use mock responses instead of a real JMRI server
+   */
+  mock: MockOptions;
 }
 
 /**
@@ -125,7 +148,11 @@ export const DEFAULT_CLIENT_OPTIONS: JmriClientOptions = {
     timeout: 5000
   },
   messageQueueSize: 100,
-  requestTimeout: 10000
+  requestTimeout: 10000,
+  mock: {
+    enabled: false,
+    responseDelay: 50
+  }
 };
 
 /**
@@ -140,6 +167,7 @@ export type PartialClientOptions = Partial<{
   heartbeat: Partial<HeartbeatOptions>;
   messageQueueSize: number;
   requestTimeout: number;
+  mock: Partial<MockOptions>;
 }>;
 
 /**
@@ -165,6 +193,10 @@ export function mergeOptions(userOptions?: PartialClientOptions): JmriClientOpti
 
   if (userOptions.heartbeat) {
     options.heartbeat = { ...DEFAULT_CLIENT_OPTIONS.heartbeat, ...userOptions.heartbeat };
+  }
+
+  if (userOptions.mock) {
+    options.mock = { ...DEFAULT_CLIENT_OPTIONS.mock, ...userOptions.mock };
   }
 
   return options;
