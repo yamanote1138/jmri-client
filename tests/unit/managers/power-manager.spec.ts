@@ -67,6 +67,33 @@ describe('PowerManager', () => {
 
       expect(powerManager.getCachedState()).toBe(PowerState.ON);
     });
+
+    it('should emit power:changed event when state changes', async () => {
+      mockClient.request.mockResolvedValue({});
+
+      const spy = jest.fn();
+      powerManager.on('power:changed', spy);
+
+      await powerManager.setPower(PowerState.ON);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(PowerState.ON);
+    });
+
+    it('should not emit power:changed event if state has not changed', async () => {
+      mockClient.request.mockResolvedValue({});
+
+      // Set initial state
+      await powerManager.setPower(PowerState.ON);
+
+      const spy = jest.fn();
+      powerManager.on('power:changed', spy);
+
+      // Set to same state
+      await powerManager.setPower(PowerState.ON);
+
+      expect(spy).not.toHaveBeenCalled();
+    });
   });
 
   describe('powerOn', () => {

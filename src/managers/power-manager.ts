@@ -53,7 +53,13 @@ export class PowerManager extends EventEmitter {
     };
 
     await this.client.request<PowerMessage>(message);
+
+    const oldState = this.currentState;
     this.currentState = state;
+
+    if (oldState !== this.currentState) {
+      this.emit('power:changed', this.currentState);
+    }
   }
 
   /**
