@@ -1,6 +1,6 @@
 {
   "name": "jmri-client",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "WebSocket client for JMRI with real-time updates and throttle control",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
