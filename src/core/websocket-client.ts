@@ -126,7 +126,14 @@ export class WebSocketClient extends EventEmitter {
         });
 
         this.ws.on('close', (code: number, reason: string) => {
-          this.handleClose(code, reason);
+          // If close happens during connection attempt, treat as connection failure
+          if (this.stateManager.isConnecting()) {
+            const error = new Error(`WebSocket connection failed (code: ${code}${reason ? ', reason: ' + reason : ''})`);
+            this.handleError(error);
+            reject(error);
+          } else {
+            this.handleClose(code, reason);
+          }
         });
 
         this.ws.on('error', (error: Error) => {
