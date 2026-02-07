@@ -128,8 +128,10 @@ export class WebSocketClient extends EventEmitter {
         this.ws.on('close', (code: number, reason: string) => {
           // If close happens during connection attempt, treat as connection failure
           if (this.stateManager.isConnecting()) {
+            // Transition to disconnected state so reconnection can proceed
+            this.stateManager.transition(ConnectionState.DISCONNECTED);
             const error = new Error(`WebSocket connection failed (code: ${code}${reason ? ', reason: ' + reason : ''})`);
-            this.handleError(error);
+            this.emit('error', error);
             reject(error);
           } else {
             this.handleClose(code, reason);
@@ -137,8 +139,9 @@ export class WebSocketClient extends EventEmitter {
         });
 
         this.ws.on('error', (error: Error) => {
-          this.handleError(error);
+          this.emit('error', error);
           if (this.stateManager.isConnecting()) {
+            this.stateManager.transition(ConnectionState.DISCONNECTED);
             reject(error);
           }
         });
@@ -400,13 +403,6 @@ export class WebSocketClient extends EventEmitter {
       this.stateManager.forceState(ConnectionState.RECONNECTING);
       this.reconnectionManager.start(() => this.connect());
     }
-  }
-
-  /**
-   * Handle WebSocket error event
-   */
-  private handleError(error: Error): void {
-    this.emit('error', error);
   }
 
   /**
