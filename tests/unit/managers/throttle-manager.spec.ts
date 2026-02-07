@@ -12,6 +12,7 @@ describe('ThrottleManager', () => {
   beforeEach(() => {
     mockClient = new EventEmitter() as any;
     mockClient.request = jest.fn();
+    mockClient.send = jest.fn();
     throttleManager = new ThrottleManager(mockClient as any);
   });
 
@@ -32,7 +33,10 @@ describe('ThrottleManager', () => {
       expect(throttleId).toBe('CSX754');
       expect(mockClient.request).toHaveBeenCalledWith({
         type: 'throttle',
-        data: { address: 754 }
+        data: {
+          address: 754,
+          name: expect.stringContaining('jmri-client')
+        }
       });
     });
 
@@ -67,15 +71,17 @@ describe('ThrottleManager', () => {
       throttleManager.acquireThrottle({ address: 754 });
     });
 
-    it('should throw error if no throttle ID returned', async () => {
+    it('should use generated ID if no throttle ID returned', async () => {
       mockClient.request.mockResolvedValue({
         type: 'throttle',
         data: { address: 754 }
       });
 
-      await expect(
-        throttleManager.acquireThrottle({ address: 754 })
-      ).rejects.toThrow('Failed to acquire throttle');
+      const throttleId = await throttleManager.acquireThrottle({ address: 754 });
+
+      // Should get a generated ID that includes the address
+      expect(throttleId).toContain('754');
+      expect(throttleId).toContain('jmri-client');
     });
   });
 
@@ -139,11 +145,9 @@ describe('ThrottleManager', () => {
     });
 
     it('should set throttle speed', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setSpeed('CSX754', 0.5);
 
-      expect(mockClient.request).toHaveBeenCalledWith({
+      expect(mockClient.send).toHaveBeenCalledWith({
         type: 'throttle',
         data: {
           throttle: 'CSX754',
@@ -153,8 +157,6 @@ describe('ThrottleManager', () => {
     });
 
     it('should update throttle state', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setSpeed('CSX754', 0.75);
 
       const state = throttleManager.getThrottleState('CSX754');
@@ -188,11 +190,9 @@ describe('ThrottleManager', () => {
     });
 
     it('should set throttle direction forward', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setDirection('CSX754', true);
 
-      expect(mockClient.request).toHaveBeenCalledWith({
+      expect(mockClient.send).toHaveBeenCalledWith({
         type: 'throttle',
         data: {
           throttle: 'CSX754',
@@ -202,8 +202,6 @@ describe('ThrottleManager', () => {
     });
 
     it('should set throttle direction reverse', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setDirection('CSX754', false);
 
       const state = throttleManager.getThrottleState('CSX754');
@@ -227,11 +225,9 @@ describe('ThrottleManager', () => {
     });
 
     it('should set throttle function', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setFunction('CSX754', 'F0', true);
 
-      expect(mockClient.request).toHaveBeenCalledWith({
+      expect(mockClient.send).toHaveBeenCalledWith({
         type: 'throttle',
         data: {
           throttle: 'CSX754',
@@ -241,8 +237,6 @@ describe('ThrottleManager', () => {
     });
 
     it('should update throttle state', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setFunction('CSX754', 'F2', true);
 
       const state = throttleManager.getThrottleState('CSX754');
@@ -250,8 +244,6 @@ describe('ThrottleManager', () => {
     });
 
     it('should support all function keys F0-F28', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.setFunction('CSX754', 'F0', true);
       await throttleManager.setFunction('CSX754', 'F28', true);
 
@@ -283,11 +275,9 @@ describe('ThrottleManager', () => {
     });
 
     it('should set speed to 0', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.emergencyStop('CSX754');
 
-      expect(mockClient.request).toHaveBeenCalledWith({
+      expect(mockClient.send).toHaveBeenCalledWith({
         type: 'throttle',
         data: {
           throttle: 'CSX754',
@@ -307,8 +297,6 @@ describe('ThrottleManager', () => {
     });
 
     it('should set speed to 0', async () => {
-      mockClient.request.mockResolvedValue({});
-
       await throttleManager.idle('CSX754');
 
       const state = throttleManager.getThrottleState('CSX754');
