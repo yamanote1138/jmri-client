@@ -1,76 +1,131 @@
-jmri-client
+# jmri-client
+
 [![Build](https://github.com/yamanote1138/jmri-client/actions/workflows/build-and-test.yml/badge.svg?branch=main)](https://github.com/yamanote1138/jmri-client/actions/workflows/build-and-test.yml)
 ![License](https://img.shields.io/npm/l/jmri-client)
 ![NPM Version](https://img.shields.io/npm/v/jmri-client)
-=========
 
-node client to connect to a [JMRI](http://jmri.sourceforge.net/) xmlio webservice
-this allows basic control of a model railroad layout via DCC
+WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates and full throttle control.
 
 [![NPM](https://nodei.co/npm/jmri-client.png?compact=true)](https://nodei.co/npm/jmri-client/)
 
-## Usage
+## Features
 
-### setup and instantiate client
-```javascript
-"use strict";
+- ✅ **WebSocket-based** - Real-time bidirectional communication
+- ✅ **Event-driven** - Subscribe to power changes, throttle updates, and more
+- ✅ **Full Throttle Control** - Speed (0.0-1.0), direction, and functions (F0-F28)
+- ✅ **Auto-reconnection** - Exponential backoff with jitter
+- ✅ **Heartbeat monitoring** - Automatic ping/pong keepalive
+- ✅ **TypeScript** - Full type definitions included
+- ✅ **Dual module support** - ESM and CommonJS
 
-import { JmriClient } from "jmri-client";
+## Installation
 
-const client = new JmriClient('http', 'jmri.local', 12080);
+```bash
+npm install jmri-client
 ```
 
-### getPower
-get status of layout power (on or off)
-```javascript
-await client.getPower().then((res) => {
-  console.log(res);
+**Requirements:** Node.js 18+
+
+## Quick Start
+
+```typescript
+import { JmriClient, PowerState } from 'jmri-client';
+
+// Create client
+const client = new JmriClient({
+  host: 'jmri.local',
+  port: 12080
+});
+
+// Listen for events
+client.on('connected', () => console.log('Connected!'));
+client.on('power:changed', (state) => {
+  console.log('Power:', state === PowerState.ON ? 'ON' : 'OFF');
+});
+
+// Control power
+await client.powerOn();
+
+// Acquire and control a throttle
+const throttleId = await client.acquireThrottle({ address: 3 });
+await client.setThrottleSpeed(throttleId, 0.5);  // 50% speed
+await client.setThrottleDirection(throttleId, true);  // Forward
+await client.setThrottleFunction(throttleId, 'F0', true);  // Headlight on
+
+// Clean up
+await client.releaseThrottle(throttleId);
+await client.disconnect();
+```
+
+## Documentation
+
+- **[API Reference](docs/API.md)** - Complete API documentation
+- **[Examples](docs/EXAMPLES.md)** - Common usage patterns
+- **[Migration Guide](docs/MIGRATION.md)** - Upgrading from v2.x
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+
+## Key Concepts
+
+### Event-Driven Architecture
+
+Subscribe to real-time updates from JMRI:
+
+```typescript
+client.on('connected', () => { });
+client.on('disconnected', (reason) => { });
+client.on('power:changed', (state) => { });
+client.on('throttle:updated', (id, data) => { });
+```
+
+### Throttle Control
+
+Full control of DCC locomotives:
+
+```typescript
+const throttle = await client.acquireThrottle({ address: 3 });
+await client.setThrottleSpeed(throttle, 0.5);
+await client.setThrottleDirection(throttle, true);
+await client.setThrottleFunction(throttle, 'F0', true);
+await client.releaseThrottle(throttle);
+```
+
+### Auto-Reconnection
+
+Automatically reconnects with exponential backoff:
+
+```typescript
+client.on('reconnecting', (attempt, delay) => {
+  console.log(`Reconnecting attempt ${attempt} in ${delay}ms`);
 });
 ```
 
-### setPower
-turn layout power on/off
-```javascript
-await client.setPower(true).then((res) => {
-  console.log(res);
-});
+## Testing
+
+**Unit Tests** (no hardware required):
+```bash
+npm test
 ```
 
-## future functionality
-
-### getThrottle
-get full status data for a given address or array of addresses (eg [11, 38])
-```javascript
-await client.getThrottle(addresses);
+**Functional Test** (requires JMRI hardware):
+```bash
+node tests/functional/interactive-test.mjs
 ```
 
-### setThrottleSpeed
-set speed for specified throttle address
-```javascript
-await client.setThrottleSpeed(address, speed);
-```
+⚠️ **Safety**: Includes automatic power-off on exit, errors, and Ctrl+C.
 
-### setThrottleDirection
-set direction for specified address
-use 'true' for forward, 'false' for backward
-```javascript
-await client.setThrottleDirection(address, direction);
-```
+See **[Testing Guide](docs/TESTING.md)** for complete instructions and safety procedures.
 
-### setThrottleFunction
-set function value specified address and function
-```javascript
-await client.setThrottleFunction(address, functionNumber, value);
-```
+## Contributing
 
-### getTurnouts
-list all turnouts with current status
-```javascript
-await client.getTurnouts();
-```
+Issues and pull requests welcome! Please see the [GitHub repository](https://github.com/yamanote1138/jmri-client).
 
-### setTurnout
-set status of specific turnout by address
-```javascript
-await client.setTurnout(address, value);
-```
+## License
+
+MIT
+
+## Links
+
+- [GitHub Repository](https://github.com/yamanote1138/jmri-client)
+- [NPM Package](https://www.npmjs.com/package/jmri-client)
+- [JMRI Project](http://jmri.sourceforge.net/)
+- [JMRI JSON Protocol](https://www.jmri.org/help/en/html/web/JsonServlet.shtml)
