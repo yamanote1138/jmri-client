@@ -13,6 +13,7 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 - ✅ **WebSocket-based** - Real-time bidirectional communication
 - ✅ **Event-driven** - Subscribe to power changes, throttle updates, and more
 - ✅ **Full Throttle Control** - Speed (0.0-1.0), direction, and functions (F0-F28)
+- ✅ **Mock Mode** - Test and demo without JMRI hardware
 - ✅ **Auto-reconnection** - Exponential backoff with jitter
 - ✅ **Heartbeat monitoring** - Automatic ping/pong keepalive
 - ✅ **TypeScript** - Full type definitions included
@@ -61,6 +62,7 @@ await client.disconnect();
 
 - **[API Reference](docs/API.md)** - Complete API documentation
 - **[Examples](docs/EXAMPLES.md)** - Common usage patterns
+- **[Mock Mode](docs/MOCK_MODE.md)** - Testing without hardware
 - **[Migration Guide](docs/MIGRATION.md)** - Upgrading from v2.x
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
@@ -106,14 +108,19 @@ client.on('reconnecting', (attempt, delay) => {
 npm test
 ```
 
+**Mock Mode Demo** (no hardware required):
+```bash
+npm run demo:mock
+```
+
 **Functional Test** (requires JMRI hardware):
 ```bash
-node tests/functional/interactive-test.mjs
+npm run functional
 ```
 
 ⚠️ **Safety**: Includes automatic power-off on exit, errors, and Ctrl+C.
 
-See **[Testing Guide](docs/TESTING.md)** for complete instructions and safety procedures.
+See **[Mock Mode Guide](docs/MOCK_MODE.md)** and **[Testing Guide](docs/TESTING.md)** for complete instructions.
 
 ## Contributing
 
