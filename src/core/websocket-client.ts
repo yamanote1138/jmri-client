@@ -3,7 +3,7 @@
  */
 
 import { EventEmitter } from 'events';
-import WebSocket from 'ws';
+import { createWebSocketAdapter, WebSocketAdapter } from './websocket-adapter.js';
 import { JmriClientOptions } from '../types/client-options.js';
 import { JmriMessage, AnyJmriMessage, GoodbyeMessage } from '../types/jmri-messages.js';
 import { ConnectionState } from '../types/events.js';
@@ -30,7 +30,7 @@ interface PendingRequest {
  */
 export class WebSocketClient extends EventEmitter {
   private options: JmriClientOptions;
-  private ws?: WebSocket;
+  private ws?: WebSocketAdapter;
   private url: string;
 
   // Sub-managers
@@ -114,19 +114,19 @@ export class WebSocketClient extends EventEmitter {
     // Real WebSocket connection
     return new Promise((resolve, reject) => {
       try {
-        this.ws = new WebSocket(this.url);
+        this.ws = createWebSocketAdapter(this.url);
 
         this.ws.on('open', () => {
           this.handleOpen();
           resolve();
         });
 
-        this.ws.on('message', (data: WebSocket.Data) => {
+        this.ws.on('message', (data: string) => {
           this.handleMessage(data);
         });
 
-        this.ws.on('close', (code: number, reason: Buffer) => {
-          this.handleClose(code, reason.toString());
+        this.ws.on('close', (code: number, reason: string) => {
+          this.handleClose(code, reason);
         });
 
         this.ws.on('error', (error: Error) => {
@@ -310,9 +310,9 @@ export class WebSocketClient extends EventEmitter {
   /**
    * Handle WebSocket message event
    */
-  private handleMessage(data: WebSocket.Data): void {
+  private handleMessage(data: string): void {
     try {
-      const message: AnyJmriMessage = JSON.parse(data.toString());
+      const message: AnyJmriMessage = JSON.parse(data);
       this.emit('message:received', message);
 
       // Handle pong
