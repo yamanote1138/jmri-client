@@ -12,7 +12,7 @@ const VALID_TRANSITIONS: Record<ConnectionState, ConnectionState[]> = {
   [ConnectionState.DISCONNECTED]: [ConnectionState.CONNECTING],
   [ConnectionState.CONNECTING]: [ConnectionState.CONNECTED, ConnectionState.DISCONNECTED],
   [ConnectionState.CONNECTED]: [ConnectionState.DISCONNECTED, ConnectionState.RECONNECTING],
-  [ConnectionState.RECONNECTING]: [ConnectionState.CONNECTED, ConnectionState.DISCONNECTED]
+  [ConnectionState.RECONNECTING]: [ConnectionState.CONNECTING, ConnectionState.CONNECTED, ConnectionState.DISCONNECTED]
 };
 
 /**

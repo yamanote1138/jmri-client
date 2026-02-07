@@ -1,6 +1,6 @@
 {
   "name": "jmri-client",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "description": "WebSocket client for JMRI with real-time updates and throttle control - works in both Node.js and browsers",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -21,6 +21,7 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.json --declaration --emitDeclarationOnly --outDir dist/types",
     "test": "jest --no-cache --coverage",
+    "test:browser": "node ./tests/integration/serve-test.mjs",
     "functional": "node ./tests/functional/interactive-test.mjs",
     "demo:mock": "node ./examples/mock-demo.mjs"
   },
