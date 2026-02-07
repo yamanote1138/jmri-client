@@ -99,10 +99,14 @@ export class WebSocketClient extends EventEmitter {
    * Connect to JMRI WebSocket server (or mock)
    */
   async connect(): Promise<void> {
+    console.log('[WebSocketClient] connect() called, state:', this.stateManager.getState());
+
     if (this.stateManager.isConnected() || this.stateManager.isConnecting()) {
+      console.log('[WebSocketClient] connect() early return - already connected/connecting');
       return;
     }
 
+    console.log('[WebSocketClient] connect() proceeding with connection attempt');
     this.isManualDisconnect = false;
     this.stateManager.transition(ConnectionState.CONNECTING);
 
@@ -112,9 +116,11 @@ export class WebSocketClient extends EventEmitter {
     }
 
     // Real WebSocket connection
+    console.log('[WebSocketClient] Creating new WebSocket adapter for:', this.url);
     return new Promise((resolve, reject) => {
       try {
         this.ws = createWebSocketAdapter(this.url);
+        console.log('[WebSocketClient] WebSocket adapter created');
 
         this.ws.on('open', () => {
           this.handleOpen();
@@ -387,9 +393,11 @@ export class WebSocketClient extends EventEmitter {
    * Handle WebSocket close event
    */
   private handleClose(code: number, reason: string): void {
+    console.log('[WebSocketClient] handleClose() called, code:', code, 'state:', this.stateManager.getState());
     this.heartbeatManager.stop();
 
     const wasConnected = this.stateManager.isConnected();
+    const wasReconnecting = this.stateManager.getState() === ConnectionState.RECONNECTING;
 
     if (this.stateManager.isConnected() || this.stateManager.isConnecting()) {
       this.stateManager.transition(ConnectionState.DISCONNECTED);
@@ -401,7 +409,16 @@ export class WebSocketClient extends EventEmitter {
     this.rejectAllPendingRequests(new Error('Connection closed'));
 
     // Attempt reconnection if not manual disconnect
-    if (!this.isManualDisconnect && wasConnected && this.options.reconnection.enabled) {
+    // Continue reconnecting if we were connected OR already in reconnection mode
+    console.log('[WebSocketClient] Reconnection check:', {
+      isManualDisconnect: this.isManualDisconnect,
+      wasConnected,
+      wasReconnecting,
+      enabled: this.options.reconnection.enabled,
+      willReconnect: !this.isManualDisconnect && (wasConnected || wasReconnecting) && this.options.reconnection.enabled
+    });
+    if (!this.isManualDisconnect && (wasConnected || wasReconnecting) && this.options.reconnection.enabled) {
+      console.log('[WebSocketClient] Starting reconnection manager');
       this.stateManager.forceState(ConnectionState.RECONNECTING);
       this.reconnectionManager.start(() => this.connect());
     }
