@@ -133,6 +133,8 @@ export class WebSocketClient extends EventEmitter {
             const error = new Error(`WebSocket connection failed (code: ${code}${reason ? ', reason: ' + reason : ''})`);
             this.emit('error', error);
             reject(error);
+            // Still need to handle close to trigger reconnection
+            this.handleClose(code, reason);
           } else {
             this.handleClose(code, reason);
           }
