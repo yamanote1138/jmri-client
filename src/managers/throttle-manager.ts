@@ -128,6 +128,7 @@ export class ThrottleManager extends EventEmitter {
     this.client.send(message);
 
     state.speed = speed;
+    this.emit('throttle:updated', throttleId, { speed });
   }
 
   /**
@@ -151,6 +152,7 @@ export class ThrottleManager extends EventEmitter {
     this.client.send(message);
 
     state.forward = forward;
+    this.emit('throttle:updated', throttleId, { forward });
   }
 
   /**
@@ -180,6 +182,7 @@ export class ThrottleManager extends EventEmitter {
     this.client.send(message);
 
     state.functions.set(functionKey, value);
+    this.emit('throttle:updated', throttleId, { [functionKey]: value });
   }
 
   /**
