@@ -163,6 +163,16 @@ describe('ThrottleManager', () => {
       expect(state?.speed).toBe(0.75);
     });
 
+    it('should emit throttle:updated event', (done) => {
+      throttleManager.on('throttle:updated', (id, data) => {
+        expect(id).toBe('CSX754');
+        expect(data.speed).toBe(0.5);
+        done();
+      });
+
+      throttleManager.setSpeed('CSX754', 0.5);
+    });
+
     it('should throw error for invalid speed', async () => {
       await expect(
         throttleManager.setSpeed('CSX754', -0.1)
@@ -208,6 +218,16 @@ describe('ThrottleManager', () => {
       expect(state?.forward).toBe(false);
     });
 
+    it('should emit throttle:updated event', (done) => {
+      throttleManager.on('throttle:updated', (id, data) => {
+        expect(id).toBe('CSX754');
+        expect(data.forward).toBe(false);
+        done();
+      });
+
+      throttleManager.setDirection('CSX754', false);
+    });
+
     it('should throw error for non-existent throttle', async () => {
       await expect(
         throttleManager.setDirection('NonExistent', true)
@@ -241,6 +261,16 @@ describe('ThrottleManager', () => {
 
       const state = throttleManager.getThrottleState('CSX754');
       expect(state?.functions.get('F2')).toBe(true);
+    });
+
+    it('should emit throttle:updated event', (done) => {
+      throttleManager.on('throttle:updated', (id, data) => {
+        expect(id).toBe('CSX754');
+        expect(data.F0).toBe(true);
+        done();
+      });
+
+      throttleManager.setFunction('CSX754', 'F0', true);
     });
 
     it('should support all function keys F0-F28', async () => {
