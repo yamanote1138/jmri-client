@@ -69,6 +69,7 @@ export class JmriClient extends EventEmitter {
     this.wsClient.on('error', (error: Error) => this.emit('error', error));
     this.wsClient.on('heartbeat:sent', () => this.emit('heartbeat:sent'));
     this.wsClient.on('heartbeat:timeout', () => this.emit('heartbeat:timeout'));
+    this.wsClient.on('debug', (message: string) => this.emit('debug', message));
 
     // Forward events from managers
     this.powerManager.on('power:changed', (state: PowerState) =>
