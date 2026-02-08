@@ -2,7 +2,7 @@
  * Main JMRI client class
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { WebSocketClient } from './core/websocket-client.js';
 import { PowerManager } from './managers/power-manager.js';
 import { RosterManager } from './managers/roster-manager.js';
@@ -42,11 +42,6 @@ export class JmriClient extends EventEmitter {
   constructor(options?: PartialClientOptions) {
     super();
 
-    // VERSION CHECK - emit immediately so we know which version is loaded
-    setImmediate(() => {
-      this.emit('error', new Error('VERSION_CHECK:jmri-client@3.1.11-debug loaded'));
-    });
-
     // Merge options with defaults
     this.options = mergeOptions(options);
 
@@ -74,7 +69,6 @@ export class JmriClient extends EventEmitter {
     this.wsClient.on('error', (error: Error) => this.emit('error', error));
     this.wsClient.on('heartbeat:sent', () => this.emit('heartbeat:sent'));
     this.wsClient.on('heartbeat:timeout', () => this.emit('heartbeat:timeout'));
-    this.wsClient.on('debug', (message: string) => this.emit('debug', message));
 
     // Forward events from managers
     this.powerManager.on('power:changed', (state: PowerState) =>

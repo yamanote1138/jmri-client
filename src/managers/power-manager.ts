@@ -2,7 +2,7 @@
  * Power control manager
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { WebSocketClient } from '../core/websocket-client.js';
 import { PowerState, PowerMessage } from '../types/jmri-messages.js';
 

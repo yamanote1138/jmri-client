@@ -3,7 +3,7 @@
  * Provides a unified interface for WebSocket connections in both Node.js and browser environments
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 
 /**
  * WebSocket adapter interface
@@ -27,14 +27,14 @@ export enum ReadyState {
 /**
  * Create a WebSocket adapter for the current environment
  */
-export function createWebSocketAdapter(url: string, protocols?: string | string[]): WebSocketAdapter {
+export async function createWebSocketAdapter(url: string, protocols?: string | string[]): Promise<WebSocketAdapter> {
   // Detect environment
   const isBrowser = typeof window !== 'undefined' && typeof window.WebSocket !== 'undefined';
 
   if (isBrowser) {
     return new BrowserWebSocketAdapter(url, protocols);
   } else {
-    return new NodeWebSocketAdapter(url, protocols);
+    return await NodeWebSocketAdapter.create(url, protocols);
   }
 }
 
@@ -87,14 +87,9 @@ class BrowserWebSocketAdapter extends EventEmitter implements WebSocketAdapter {
 class NodeWebSocketAdapter extends EventEmitter implements WebSocketAdapter {
   private ws: any;
 
-  constructor(url: string, protocols?: string | string[]) {
+  private constructor(ws: any) {
     super();
-
-    // Dynamic import of ws package (only loaded in Node.js)
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const WebSocket = require('ws');
-
-    this.ws = new WebSocket(url, protocols);
+    this.ws = ws;
 
     this.ws.on('open', () => {
       this.emit('open');
@@ -113,6 +108,13 @@ class NodeWebSocketAdapter extends EventEmitter implements WebSocketAdapter {
     this.ws.on('close', (code: number, reason: string) => {
       this.emit('close', code, reason);
     });
+  }
+
+  static async create(url: string, protocols?: string | string[]): Promise<NodeWebSocketAdapter> {
+    // Use dynamic import for ESM compatibility
+    const { default: WebSocket } = await import('ws');
+    const ws = new WebSocket(url, protocols);
+    return new NodeWebSocketAdapter(ws);
   }
 
   send(data: string): void {

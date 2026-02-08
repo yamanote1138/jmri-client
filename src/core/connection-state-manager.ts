@@ -2,7 +2,7 @@
  * Connection state management with state machine
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { ConnectionState } from '../types/events.js';
 
 /**

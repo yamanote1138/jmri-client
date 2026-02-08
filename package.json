@@ -1,14 +1,14 @@
 {
   "name": "jmri-client",
-  "version": "3.1.11-debug",
+  "version": "3.2.1",
   "description": "WebSocket client for JMRI with real-time updates and throttle control - works in both Node.js and browsers",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "browser": "./dist/esm/index.js",
+  "browser": "./dist/browser/jmri-client.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "browser": "./dist/esm/index.js",
+      "browser": "./dist/browser/jmri-client.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "types": "./dist/types/index.d.ts"
@@ -16,12 +16,16 @@
   },
   "scripts": {
     "prepublish": "npm run build",
-    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types && npm run build:browser",
     "build:cjs": "tsc -p tsconfig.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:types": "tsc -p tsconfig.json --declaration --emitDeclarationOnly --outDir dist/types",
+    "build:browser": "node build-browser.mjs",
     "test": "jest --no-cache --coverage",
     "test:browser": "node ./tests/integration/serve-test.mjs",
+    "test:reconnect": "node ./tests/integration/forced-reconnect.mjs",
+    "test:reconnect:browser": "node ./tests/browser/serve.mjs",
+    "test:reconnect:browser:headless": "node ./tests/browser/playwright-reconnect-test.mjs",
     "functional": "node ./tests/functional/interactive-test.mjs",
     "demo:mock": "node ./examples/mock-demo.mjs"
   },
@@ -57,11 +61,14 @@
     "@types/jest": "^29.0.3",
     "@types/node": "^18.19.0",
     "@types/ws": "^8.5.10",
+    "esbuild": "^0.27.3",
     "jest": "^29.0.3",
+    "playwright": "^1.58.2",
     "ts-jest": "^29.4.6",
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "eventemitter3": "^5.0.4",
     "ws": "^8.16.0"
   },
   "files": [

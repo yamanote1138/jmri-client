@@ -2,7 +2,7 @@
  * Automatic reconnection management with exponential backoff
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { ReconnectionOptions } from '../types/client-options.js';
 import { calculateBackoffDelay, shouldReconnect } from '../utils/exponential-backoff.js';
 
@@ -54,22 +54,15 @@ export class ReconnectionManager extends EventEmitter {
 
     // Schedule attempt
     this.reconnectTimeout = setTimeout(async () => {
-      console.log('🔴🔴🔴 [ReconnectionManager] setTimeout fired, attempt', this.currentAttempt, '🔴🔴🔴');
       this.emit('attempting', this.currentAttempt);
-      this.emit('debug', `[ReconnectionManager] Calling reconnect() for attempt ${this.currentAttempt}`);
 
       try {
-        console.log('🔴 [ReconnectionManager] About to call reconnect(), type:', typeof reconnect);
-        this.emit('debug', '[ReconnectionManager] About to await reconnect()');
         await reconnect();
-        console.log('🔴 [ReconnectionManager] reconnect() returned successfully');
-        this.emit('debug', '[ReconnectionManager] reconnect() succeeded');
         // Success - stop reconnection process
         this.stop();
         this.emit('success', this.currentAttempt);
       } catch (error) {
         // Failure - schedule next attempt
-        this.emit('debug', `[ReconnectionManager] reconnect() failed: ${error}`);
         this.emit('failed', this.currentAttempt, error);
         this.scheduleNextAttempt(reconnect);
       }

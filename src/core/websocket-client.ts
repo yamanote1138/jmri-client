@@ -2,7 +2,7 @@
  * Core WebSocket client for JMRI communication
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { createWebSocketAdapter, WebSocketAdapter } from './websocket-adapter.js';
 import { JmriClientOptions } from '../types/client-options.js';
 import { JmriMessage, AnyJmriMessage, GoodbyeMessage } from '../types/jmri-messages.js';
@@ -51,13 +51,6 @@ export class WebSocketClient extends EventEmitter {
     super();
     this.options = options;
     this.url = `${options.protocol}://${options.host}:${options.port}/json/`;
-
-    // Emit version immediately to verify correct package is loaded
-    setImmediate(() => {
-      this.emit('connectionStateChanged', 'VERSION_CHECK:3.1.11-debug' as any);
-      this.emit('debug', '🔴 WebSocketClient constructor completed - VERSION 3.1.11-debug');
-      console.log('🔴 WebSocketClient emitted debug event from constructor');
-    });
 
     // Initialize sub-managers
     this.messageIdGen = new MessageIdGenerator();
@@ -110,24 +103,12 @@ export class WebSocketClient extends EventEmitter {
    * Connect to JMRI WebSocket server (or mock)
    */
   async connect(): Promise<void> {
-    // CRITICAL: This should appear EVERY time connect() is called
-    console.log('🔴🔴🔴 [WebSocketClient] connect() ENTRY POINT 🔴🔴🔴');
-
-    // Emit events for debugging since console.logs don't appear in browser
-    this.emit('debug', `connect() called, state: ${this.stateManager.getState()}`);
-    console.log('[WebSocketClient] connect() called, state:', this.stateManager.getState());
-
     if (this.stateManager.isConnected() || this.stateManager.isConnecting()) {
-      this.emit('debug', 'connect() early return - already connected/connecting');
-      console.log('[WebSocketClient] connect() early return - already connected/connecting');
       return;
     }
 
-    this.emit('debug', `connect() proceeding with connection attempt`);
-    console.log('[WebSocketClient] connect() proceeding with connection attempt');
     this.isManualDisconnect = false;
     this.stateManager.transition(ConnectionState.CONNECTING);
-    this.emit('debug', `State transitioned to: ${this.stateManager.getState()}`);
 
     // Mock mode - simulate connection
     if (this.mockManager) {
@@ -135,13 +116,9 @@ export class WebSocketClient extends EventEmitter {
     }
 
     // Real WebSocket connection
-    this.emit('debug', `Creating WebSocket adapter for: ${this.url}`);
-    console.log('[WebSocketClient] Creating new WebSocket adapter for:', this.url);
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        this.ws = createWebSocketAdapter(this.url);
-        this.emit('debug', 'WebSocket adapter created successfully');
-        console.log('[WebSocketClient] WebSocket adapter created');
+        this.ws = await createWebSocketAdapter(this.url);
 
         this.ws.on('open', () => {
           this.handleOpen();
@@ -414,13 +391,10 @@ export class WebSocketClient extends EventEmitter {
    * Handle WebSocket close event
    */
   private handleClose(code: number, reason: string): void {
-    this.emit('debug', `handleClose() called, code: ${code}, state: ${this.stateManager.getState()}`);
-    console.log('[WebSocketClient] handleClose() called, code:', code, 'state:', this.stateManager.getState());
     this.heartbeatManager.stop();
 
     const wasConnected = this.stateManager.isConnected();
     const isReconnecting = this.reconnectionManager.reconnecting();
-    this.emit('debug', `handleClose: wasConnected=${wasConnected}, isReconnecting=${isReconnecting}`);
 
     if (this.stateManager.isConnected() || this.stateManager.isConnecting()) {
       this.stateManager.transition(ConnectionState.DISCONNECTED);
@@ -433,20 +407,9 @@ export class WebSocketClient extends EventEmitter {
 
     // Attempt reconnection if not manual disconnect
     // Continue reconnecting if we were connected OR reconnection manager is already active
-    console.log('[WebSocketClient] Reconnection check:', {
-      isManualDisconnect: this.isManualDisconnect,
-      wasConnected,
-      isReconnecting,
-      enabled: this.options.reconnection.enabled,
-      willReconnect: !this.isManualDisconnect && (wasConnected || isReconnecting) && this.options.reconnection.enabled
-    });
     if (!this.isManualDisconnect && (wasConnected || isReconnecting) && this.options.reconnection.enabled) {
-      this.emit('debug', 'handleClose: Starting/continuing reconnection');
-      console.log('[WebSocketClient] Starting reconnection manager');
       this.stateManager.forceState(ConnectionState.RECONNECTING);
       this.reconnectionManager.start(() => this.connect());
-    } else {
-      this.emit('debug', `handleClose: NOT reconnecting (manual=${this.isManualDisconnect}, wasConn=${wasConnected}, isReconn=${isReconnecting}, enabled=${this.options.reconnection.enabled})`);
     }
   }
 

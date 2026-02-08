@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JMRI Client Browser Reconnection Test</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    h1 { color: #4ec9b0; }
+    h2 { color: #569cd6; margin-top: 30px; }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      padding: 15px;
+      background: #2d2d2d;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    button.connect { background: #4ec9b0; color: #1e1e1e; }
+    button.disconnect { background: #f48771; color: #1e1e1e; }
+    button.force { background: #ce9178; color: #1e1e1e; }
+    button.clear { background: #808080; color: #1e1e1e; }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .status {
+      padding: 15px;
+      background: #2d2d2d;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
+    .status-label { color: #9cdcfe; }
+    .status-value {
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .status-connected { background: #4ec9b0; color: #1e1e1e; }
+    .status-disconnected { background: #808080; color: #1e1e1e; }
+    .status-reconnecting { background: #dcdcaa; color: #1e1e1e; }
+    .status-connecting { background: #569cd6; color: #1e1e1e; }
+    .log {
+      background: #1e1e1e;
+      border: 1px solid #3e3e3e;
+      border-radius: 4px;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    .log-entry {
+      margin: 2px 0;
+      padding: 4px;
+      border-left: 3px solid transparent;
+    }
+    .log-connected { color: #4ec9b0; border-left-color: #4ec9b0; }
+    .log-disconnected { color: #f48771; border-left-color: #f48771; }
+    .log-reconnecting { color: #dcdcaa; border-left-color: #dcdcaa; }
+    .log-reconnected { color: #4ec9b0; border-left-color: #4ec9b0; font-weight: bold; }
+    .log-error { color: #f48771; border-left-color: #f48771; }
+    .log-state { color: #569cd6; border-left-color: #569cd6; }
+    .log-info { color: #9cdcfe; }
+    .timestamp { color: #6a9955; }
+    .instructions {
+      background: #2d2d2d;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #569cd6;
+    }
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔌 JMRI Client Browser Reconnection Test</h1>
+
+  <div class="instructions">
+    <strong>Test Instructions:</strong>
+    <ol>
+      <li>Open browser DevTools (F12) → Network tab → Filter by "WS"</li>
+      <li>Click "Connect" to establish initial connection</li>
+      <li>Click "Force Disconnect" to simulate connection loss</li>
+      <li>Watch the log and Network tab for reconnection attempts</li>
+      <li>Count WebSocket connections in Network tab - should increase with each attempt</li>
+    </ol>
+  </div>
+
+  <div class="status">
+    <div class="status-item">
+      <span class="status-label">Connection State:</span>
+      <span id="state" class="status-value status-disconnected">disconnected</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Total Connections:</span>
+      <span id="connected-count" class="status-value">0</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Total Disconnections:</span>
+      <span id="disconnected-count" class="status-value">0</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Reconnection Attempts:</span>
+      <span id="reconnecting-count" class="status-value">0</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Successful Reconnections:</span>
+      <span id="reconnected-count" class="status-value">0</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="connect-btn" class="connect">Connect</button>
+    <button id="disconnect-btn" class="disconnect" disabled>Disconnect</button>
+    <button id="force-btn" class="force" disabled>Force Disconnect (Test)</button>
+    <button id="clear-btn" class="clear">Clear Log</button>
+  </div>
+
+  <h2>Event Log</h2>
+  <div id="log" class="log"></div>
+
+  <script type="module">
+    import { JmriClient } from '../../dist/browser/jmri-client.js';
+
+    // Counters
+    let connectedCount = 0;
+    let disconnectedCount = 0;
+    let reconnectingCount = 0;
+    let reconnectedCount = 0;
+
+    // Elements
+    const logEl = document.getElementById('log');
+    const stateEl = document.getElementById('state');
+    const connectBtn = document.getElementById('connect-btn');
+    const disconnectBtn = document.getElementById('disconnect-btn');
+    const forceBtn = document.getElementById('force-btn');
+    const clearBtn = document.getElementById('clear-btn');
+
+    // Log function
+    function log(message, className = 'log-info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${className}`;
+      const timestamp = new Date().toLocaleTimeString() + '.' + String(Date.now()).slice(-3);
+      entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // Update status
+    function updateState(state) {
+      stateEl.textContent = state;
+      stateEl.className = 'status-value status-' + state;
+    }
+
+    function updateCounter(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    // Create client
+    let client = null;
+
+    function createClient() {
+      client = new JmriClient({
+        host: 'raspi-jmri.local',
+        port: 12080,
+        autoConnect: false,
+        reconnection: {
+          enabled: true,
+          maxAttempts: 10,
+          initialDelay: 1000,
+          maxDelay: 30000,
+          factor: 1.5
+        },
+        heartbeat: {
+          enabled: false // Disable to avoid interference with testing
+        }
+      });
+
+      // Event handlers
+      client.on('connected', () => {
+        connectedCount++;
+        updateCounter('connected-count', connectedCount);
+        log('✅ CONNECTED (total: ' + connectedCount + ')', 'log-connected');
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+        forceBtn.disabled = false;
+      });
+
+      client.on('disconnected', (reason) => {
+        disconnectedCount++;
+        updateCounter('disconnected-count', disconnectedCount);
+        log('❌ DISCONNECTED: ' + (reason || 'Unknown reason') + ' (total: ' + disconnectedCount + ')', 'log-disconnected');
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+        forceBtn.disabled = true;
+      });
+
+      client.on('reconnecting', (attempt, delay) => {
+        reconnectingCount++;
+        updateCounter('reconnecting-count', reconnectingCount);
+        log('🔄 RECONNECTING: Attempt ' + attempt + ', delay ' + delay + 'ms (total attempts: ' + reconnectingCount + ')', 'log-reconnecting');
+      });
+
+      client.on('reconnected', () => {
+        reconnectedCount++;
+        updateCounter('reconnected-count', reconnectedCount);
+        log('✅ RECONNECTED (total: ' + reconnectedCount + ')', 'log-reconnected');
+      });
+
+      client.on('reconnectionFailed', (attempts) => {
+        log('⛔ RECONNECTION FAILED after ' + attempts + ' attempts', 'log-error');
+      });
+
+      client.on('connectionStateChanged', (newState) => {
+        updateState(newState);
+        log('🔀 State changed to: ' + newState, 'log-state');
+      });
+
+      client.on('error', (error) => {
+        if (!error.message.includes('VERSION_CHECK')) {
+          log('⚠️ ERROR: ' + error.message, 'log-error');
+        }
+      });
+    }
+
+    // Button handlers
+    connectBtn.addEventListener('click', async () => {
+      log('🔌 Connecting to raspi-jmri.local:12080...', 'log-info');
+      connectBtn.disabled = true;
+
+      if (!client) {
+        createClient();
+      }
+
+      try {
+        await client.connect();
+      } catch (error) {
+        log('❌ Connection failed: ' + error.message, 'log-error');
+        connectBtn.disabled = false;
+      }
+    });
+
+    disconnectBtn.addEventListener('click', async () => {
+      log('🔌 Disconnecting...', 'log-info');
+      await client.disconnect();
+    });
+
+    forceBtn.addEventListener('click', () => {
+      log('💥 FORCING DISCONNECT (simulating network drop)...', 'log-info');
+      // Access internal WebSocket and close it
+      // This simulates an unexpected connection loss
+      const wsClient = client['wsClient'];
+      if (wsClient && wsClient['ws']) {
+        wsClient['ws']['ws'].close();
+        log('💥 Closed underlying WebSocket connection', 'log-info');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      logEl.innerHTML = '';
+      log('🗑️ Log cleared', 'log-info');
+    });
+
+    // Initial log
+    log('📋 Test page loaded. Click "Connect" to begin.', 'log-info');
+    log('📊 Open DevTools Network tab and filter by "WS" to monitor WebSocket connections', 'log-info');
+  </script>
+</body>
+</html>

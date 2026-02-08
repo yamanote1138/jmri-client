@@ -2,7 +2,7 @@
  * Throttle control manager
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { WebSocketClient } from '../core/websocket-client.js';
 import { ThrottleMessage, ThrottleData } from '../types/jmri-messages.js';
 import {

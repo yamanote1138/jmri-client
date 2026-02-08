@@ -2,7 +2,7 @@
  * Heartbeat (ping/pong) management
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 import { HeartbeatOptions } from '../types/client-options.js';
 
 /**

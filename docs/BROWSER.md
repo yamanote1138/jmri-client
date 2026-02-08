@@ -1,12 +1,27 @@
 # Browser Usage Guide
 
-jmri-client v3.1.0+ supports both Node.js and browser environments. This guide shows how to use jmri-client in web applications.
+jmri-client v3.2.0+ supports both Node.js and browser environments. This guide shows how to use jmri-client in web applications.
 
 ## Installation
 
 ```bash
 npm install jmri-client
 ```
+
+## Browser Bundle vs ESM Build
+
+jmri-client provides two builds for different use cases:
+
+- **Browser Bundle** (`dist/browser/jmri-client.js`) - ✅ **Recommended for browsers**
+  - All dependencies bundled (including eventemitter3)
+  - Ready to use in browsers without additional configuration
+  - Works with direct imports, CDN usage, and module bundlers
+
+- **ESM Build** (`dist/esm/index.js`) - For Node.js with ESM
+  - Requires module resolution for dependencies
+  - Used automatically in Node.js environments
+
+**Important:** When using jmri-client in browsers, always use the **browser bundle** to ensure proper functionality, especially for reconnection features.
 
 ## Browser Compatibility
 
@@ -20,7 +35,7 @@ No configuration or polyfills required!
 
 ### Using a Module Bundler (Recommended)
 
-With Webpack, Vite, Rollup, or similar bundlers:
+With Webpack, Vite, Rollup, or similar bundlers, the browser bundle is automatically used via the `browser` field in package.json:
 
 ```javascript
 import { JmriClient } from 'jmri-client';
@@ -51,9 +66,37 @@ await client.setThrottleSpeed(throttleId, 0.5);  // Half speed
 await client.setThrottleFunction(throttleId, 'F0', true);  // Headlight on
 ```
 
+**Note:** Most modern bundlers (Vite, Webpack 5+, etc.) automatically use the browser bundle via the `browser` field in package.json. If your bundler doesn't support this, you may need to add an alias:
+
+**Vite:**
+```typescript
+// vite.config.ts
+import { fileURLToPath, URL } from 'node:url'
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      'jmri-client': fileURLToPath(new URL('./node_modules/jmri-client/dist/browser/jmri-client.js', import.meta.url))
+    }
+  }
+})
+```
+
+**Webpack:**
+```javascript
+// webpack.config.js
+module.exports = {
+  resolve: {
+    alias: {
+      'jmri-client': path.resolve(__dirname, 'node_modules/jmri-client/dist/browser/jmri-client.js')
+    }
+  }
+}
+```
+
 ### Using a CDN (ES Modules)
 
-For quick prototypes without a build step:
+For quick prototypes without a build step, use the browser bundle:
 
 ```html
 <!DOCTYPE html>
@@ -68,7 +111,8 @@ For quick prototypes without a build step:
   <button id="speed">Set Speed 50%</button>
 
   <script type="module">
-    import { JmriClient } from 'https://cdn.jsdelivr.net/npm/jmri-client@3.1.0/dist/esm/index.js';
+    // Use the browser bundle from CDN
+    import { JmriClient } from 'https://unpkg.com/jmri-client@3.2.1/dist/browser/jmri-client.js';
 
     const client = new JmriClient({
       host: 'localhost',
@@ -98,6 +142,10 @@ For quick prototypes without a build step:
 </body>
 </html>
 ```
+
+Alternative CDNs:
+- **unpkg**: `https://unpkg.com/jmri-client@3.2.1/dist/browser/jmri-client.js`
+- **jsDelivr**: `https://cdn.jsdelivr.net/npm/jmri-client@3.2.1/dist/browser/jmri-client.js`
 
 ## React Example
 
