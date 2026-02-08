@@ -42,6 +42,11 @@ export class JmriClient extends EventEmitter {
   constructor(options?: PartialClientOptions) {
     super();
 
+    // VERSION CHECK - emit immediately so we know which version is loaded
+    setImmediate(() => {
+      this.emit('error', new Error('VERSION_CHECK:jmri-client@3.1.11-debug loaded'));
+    });
+
     // Merge options with defaults
     this.options = mergeOptions(options);
 

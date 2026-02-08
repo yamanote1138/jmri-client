@@ -52,9 +52,10 @@ export class WebSocketClient extends EventEmitter {
     this.options = options;
     this.url = `${options.protocol}://${options.host}:${options.port}/json/`;
 
-    // Test that emit works immediately
+    // Emit version immediately to verify correct package is loaded
     setImmediate(() => {
-      this.emit('debug', '🔴 WebSocketClient constructor completed');
+      this.emit('connectionStateChanged', 'VERSION_CHECK:3.1.11-debug' as any);
+      this.emit('debug', '🔴 WebSocketClient constructor completed - VERSION 3.1.11-debug');
       console.log('🔴 WebSocketClient emitted debug event from constructor');
     });
 
