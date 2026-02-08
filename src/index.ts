@@ -32,8 +32,9 @@ export {
   ThrottleState
 } from './types/index.js';
 
-// Export utility functions if needed
+// Export utility functions
 export { isThrottleFunctionKey, isValidSpeed } from './types/throttle.js';
+export { powerStateToString } from './types/jmri-messages.js';
 
 // Export mock system for testing and demo purposes
 export { MockResponseManager, mockResponseManager, mockData } from './mocks/index.js';

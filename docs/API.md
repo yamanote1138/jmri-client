@@ -58,12 +58,36 @@ client.on('heartbeat:timeout', () => { });
 ```typescript
 // Get current power state
 const state: PowerState = await client.getPower();
-// PowerState.ON = 2, PowerState.OFF = 4
+
+// PowerState enum values (from JMRI JSON protocol):
+// PowerState.UNKNOWN = 0  (state cannot be determined)
+// PowerState.ON = 2       (power is on)
+// PowerState.OFF = 4      (power is off)
+
+// Handle power state
+switch (state) {
+  case PowerState.ON:
+    console.log('Power is ON');
+    break;
+  case PowerState.OFF:
+    console.log('Power is OFF');
+    break;
+  case PowerState.UNKNOWN:
+    console.log('Power state is UNKNOWN');
+    break;
+}
 
 // Set power
 await client.setPower(PowerState.ON);
 await client.powerOn();   // Convenience method
 await client.powerOff();  // Convenience method
+
+// Listen for power changes (including UNKNOWN states)
+client.on('power:changed', (state: PowerState) => {
+  if (state === PowerState.UNKNOWN) {
+    console.log('Power state became unknown (connection issue?)');
+  }
+});
 ```
 
 ## Roster Management
@@ -136,6 +160,24 @@ if (client.isConnected()) {
 // Get detailed state
 const state = client.getConnectionState();
 // ConnectionState.CONNECTED, DISCONNECTED, CONNECTING, or RECONNECTING
+```
+
+## Utility Functions
+
+```typescript
+import { powerStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
+
+// Convert PowerState enum to readable string
+const stateStr = powerStateToString(PowerState.ON);  // 'ON'
+const stateStr2 = powerStateToString(PowerState.UNKNOWN);  // 'UNKNOWN'
+
+// Validate throttle function key
+isThrottleFunctionKey('F0');  // true
+isThrottleFunctionKey('F99');  // false
+
+// Validate speed value (0.0 to 1.0)
+isValidSpeed(0.5);  // true
+isValidSpeed(1.5);  // false
 ```
 
 ## TypeScript Types

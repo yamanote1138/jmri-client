@@ -44,7 +44,7 @@ console.log(powerState);  // Direct value (PowerState enum)
 **Changes:**
 - Methods return data directly instead of axios response objects
 - No more `.data` property on responses
-- Power state is now a `PowerState` enum (ON=2, OFF=4)
+- Power state is now a `PowerState` enum (UNKNOWN=0, ON=2, OFF=4)
 
 ### 3. Power Control
 
@@ -221,7 +221,9 @@ client.on('connected', () => {
 });
 
 client.on('power:changed', (state) => {
-  console.log('Power changed:', state === PowerState.ON ? 'ON' : 'OFF');
+  const stateStr = state === PowerState.ON ? 'ON' :
+                   state === PowerState.OFF ? 'OFF' : 'UNKNOWN';
+  console.log('Power changed:', stateStr);
 });
 ```
 

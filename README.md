@@ -42,7 +42,9 @@ const client = new JmriClient({
 // Listen for events
 client.on('connected', () => console.log('Connected!'));
 client.on('power:changed', (state) => {
-  console.log('Power:', state === PowerState.ON ? 'ON' : 'OFF');
+  const stateStr = state === PowerState.ON ? 'ON' :
+                   state === PowerState.OFF ? 'OFF' : 'UNKNOWN';
+  console.log('Power:', stateStr);
 });
 
 // Control power

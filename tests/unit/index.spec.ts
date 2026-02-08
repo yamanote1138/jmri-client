@@ -8,15 +8,17 @@ describe('Module exports', () => {
 
   it('should export PowerState', () => {
     expect(PowerState).toBeDefined();
+    expect(PowerState.UNKNOWN).toBe(0);
     expect(PowerState.ON).toBe(2);
     expect(PowerState.OFF).toBe(4);
   });
 
   it('should export type utilities', () => {
-    const { isThrottleFunctionKey, isValidSpeed } = require('../../src/index');
+    const { isThrottleFunctionKey, isValidSpeed, powerStateToString } = require('../../src/index');
 
     expect(typeof isThrottleFunctionKey).toBe('function');
     expect(typeof isValidSpeed).toBe('function');
+    expect(typeof powerStateToString).toBe('function');
   });
 });
 

@@ -9,7 +9,11 @@ const client = new JmriClient({ host: 'jmri.local' });
 
 client.on('connected', async () => {
   const power = await client.getPower();
-  console.log('Current power:', power === PowerState.ON ? 'ON' : 'OFF');
+
+  // Handle all three power states
+  const powerStr = power === PowerState.ON ? 'ON' :
+                   power === PowerState.OFF ? 'OFF' : 'UNKNOWN';
+  console.log('Current power:', powerStr);
 
   await client.powerOn();
   console.log('Power turned ON');
@@ -69,9 +73,11 @@ client.on('reconnecting', (attempt, delay) => {
 });
 client.on('reconnected', () => console.log('✓ Reconnected!'));
 
-// Monitor power changes
+// Monitor power changes (including UNKNOWN state)
 client.on('power:changed', (state) => {
-  console.log('Power changed:', state === PowerState.ON ? 'ON' : 'OFF');
+  const stateStr = state === PowerState.ON ? 'ON' :
+                   state === PowerState.OFF ? 'OFF' : 'UNKNOWN';
+  console.log('Power changed:', stateStr);
 });
 
 // Monitor throttle updates
@@ -255,6 +261,8 @@ const client = new JmriClient({ host: 'jmri.local' });
 
 client.on('connected', async () => {
   const power = await client.getPower();
-  console.log('Power:', power === PowerState.ON ? 'ON' : 'OFF');
+  const powerStr = power === PowerState.ON ? 'ON' :
+                   power === PowerState.OFF ? 'OFF' : 'UNKNOWN';
+  console.log('Power:', powerStr);
 });
 ```

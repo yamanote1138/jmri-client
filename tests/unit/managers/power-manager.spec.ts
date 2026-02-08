@@ -195,4 +195,52 @@ describe('PowerManager', () => {
       expect(powerManager.getCachedState()).toBe(PowerState.ON);
     });
   });
+
+  describe('UNKNOWN state handling', () => {
+    it('should handle getPower returning UNKNOWN', async () => {
+      mockClient.request.mockResolvedValue({
+        type: 'power',
+        data: { state: PowerState.UNKNOWN }
+      });
+
+      const state = await powerManager.getPower();
+      expect(state).toBe(PowerState.UNKNOWN);
+    });
+
+    it('should emit power:changed when transitioning to UNKNOWN', (done) => {
+      mockClient.request.mockResolvedValue({
+        type: 'power',
+        data: { state: PowerState.ON }
+      });
+
+      powerManager.on('power:changed', (state) => {
+        if (state === PowerState.UNKNOWN) {
+          done();
+        }
+      });
+
+      // Set to ON first
+      powerManager.getPower().then(() => {
+        // Then transition to UNKNOWN via unsolicited update
+        (powerManager as any).handlePowerUpdate({
+          type: 'power',
+          data: { state: PowerState.UNKNOWN }
+        });
+      });
+    });
+
+    it('should emit power:changed when transitioning from UNKNOWN to ON', (done) => {
+      powerManager.on('power:changed', (state) => {
+        if (state === PowerState.ON) {
+          done();
+        }
+      });
+
+      // Starts as UNKNOWN, receive update to ON
+      (powerManager as any).handlePowerUpdate({
+        type: 'power',
+        data: { state: PowerState.ON }
+      });
+    });
+  });
 });

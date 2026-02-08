@@ -14,13 +14,33 @@ export interface JmriMessage {
 }
 
 /**
- * Power state values
- * ON = 2, OFF = 4 (JMRI constants)
+ * Power state values (from JMRI JSON protocol constants)
+ * UNKNOWN = 0 (state cannot be determined)
+ * ON = 2 (power is on)
+ * OFF = 4 (power is off)
  */
 export enum PowerState {
+  UNKNOWN = 0,
   ON = 2,
-  OFF = 4,
-  UNKNOWN = 0
+  OFF = 4
+}
+
+/**
+ * Convert PowerState enum to human-readable string
+ * @param state - The power state
+ * @returns 'ON', 'OFF', or 'UNKNOWN'
+ */
+export function powerStateToString(state: PowerState): string {
+  switch (state) {
+    case PowerState.ON:
+      return 'ON';
+    case PowerState.OFF:
+      return 'OFF';
+    case PowerState.UNKNOWN:
+      return 'UNKNOWN';
+    default:
+      return 'UNKNOWN';
+  }
 }
 
 /**
