@@ -52,6 +52,12 @@ export class WebSocketClient extends EventEmitter {
     this.options = options;
     this.url = `${options.protocol}://${options.host}:${options.port}/json/`;
 
+    // Test that emit works immediately
+    setImmediate(() => {
+      this.emit('debug', '🔴 WebSocketClient constructor completed');
+      console.log('🔴 WebSocketClient emitted debug event from constructor');
+    });
+
     // Initialize sub-managers
     this.messageIdGen = new MessageIdGenerator();
     this.messageQueue = new MessageQueue(options.messageQueueSize);
@@ -103,6 +109,9 @@ export class WebSocketClient extends EventEmitter {
    * Connect to JMRI WebSocket server (or mock)
    */
   async connect(): Promise<void> {
+    // CRITICAL: This should appear EVERY time connect() is called
+    console.log('🔴🔴🔴 [WebSocketClient] connect() ENTRY POINT 🔴🔴🔴');
+
     // Emit events for debugging since console.logs don't appear in browser
     this.emit('debug', `connect() called, state: ${this.stateManager.getState()}`);
     console.log('[WebSocketClient] connect() called, state:', this.stateManager.getState());
