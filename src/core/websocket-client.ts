@@ -93,6 +93,10 @@ export class WebSocketClient extends EventEmitter {
     this.reconnectionManager.on('maxAttemptsReached', (attempts: number) => {
       this.emit('reconnectionFailed', attempts);
     });
+
+    this.reconnectionManager.on('debug', (message: string) => {
+      this.emit('debug', message);
+    });
   }
 
   /**

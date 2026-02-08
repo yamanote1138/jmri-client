@@ -55,14 +55,18 @@ export class ReconnectionManager extends EventEmitter {
     // Schedule attempt
     this.reconnectTimeout = setTimeout(async () => {
       this.emit('attempting', this.currentAttempt);
+      this.emit('debug', `[ReconnectionManager] Calling reconnect() for attempt ${this.currentAttempt}`);
 
       try {
+        this.emit('debug', '[ReconnectionManager] About to await reconnect()');
         await reconnect();
+        this.emit('debug', '[ReconnectionManager] reconnect() succeeded');
         // Success - stop reconnection process
         this.stop();
         this.emit('success', this.currentAttempt);
       } catch (error) {
         // Failure - schedule next attempt
+        this.emit('debug', `[ReconnectionManager] reconnect() failed: ${error}`);
         this.emit('failed', this.currentAttempt, error);
         this.scheduleNextAttempt(reconnect);
       }
