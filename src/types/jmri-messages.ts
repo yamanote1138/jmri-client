@@ -109,6 +109,17 @@ export interface ThrottleMessage extends JmriMessage {
 }
 
 /**
+ * Function key definition
+ */
+export interface FunctionKey {
+  name: string;
+  label: string | null;
+  lockable: boolean;
+  icon: string | null;
+  selectedIcon: string | null;
+}
+
+/**
  * Roster entry
  */
 export interface RosterEntry {
@@ -123,7 +134,7 @@ export interface RosterEntry {
   maxSpeed?: number;
   imageFilePath?: string;
   iconFilePath?: string;
-  functionKeys?: { [key: string]: string };
+  functionKeys?: FunctionKey[];
 }
 
 /**

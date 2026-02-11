@@ -52,13 +52,14 @@ export const mockData = {
           "model": "GP38-2",
           "comment": "Blue and yellow scheme",
           "maxSpeed": 126,
-          "functionKeys": {
-            "F0": "Headlight",
-            "F1": "Bell",
-            "F2": "Horn",
-            "F3": "Air Release",
-            "F4": "Dynamic Brake"
-          }
+          "functionKeys": [
+            { "name": "F0", "label": "Headlight", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F1", "label": "Bell", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F2", "label": "Horn", "lockable": false, "icon": null, "selectedIcon": null },
+            { "name": "F3", "label": null, "lockable": false, "icon": null, "selectedIcon": null },
+            { "name": "F4", "label": "Dynamic Brake", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F5", "label": null, "lockable": false, "icon": null, "selectedIcon": null }
+          ]
         },
         "UP3985": {
           "name": "UP3985",
@@ -70,13 +71,13 @@ export const mockData = {
           "model": "Challenger 4-6-6-4",
           "comment": "Steam locomotive",
           "maxSpeed": 126,
-          "functionKeys": {
-            "F0": "Headlight",
-            "F1": "Bell",
-            "F2": "Whistle",
-            "F3": "Steam",
-            "F4": "Coupler"
-          }
+          "functionKeys": [
+            { "name": "F0", "label": "Headlight", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F1", "label": "Bell", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F2", "label": "Whistle", "lockable": false, "icon": null, "selectedIcon": null },
+            { "name": "F3", "label": "Steam", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F4", "label": null, "lockable": false, "icon": null, "selectedIcon": null }
+          ]
         },
         "BNSF5240": {
           "name": "BNSF5240",
@@ -88,13 +89,14 @@ export const mockData = {
           "model": "SD40-2",
           "comment": "Heritage II paint",
           "maxSpeed": 126,
-          "functionKeys": {
-            "F0": "Headlight",
-            "F1": "Bell",
-            "F2": "Horn",
-            "F3": "Dynamic Brake",
-            "F4": "Mars Light"
-          }
+          "functionKeys": [
+            { "name": "F0", "label": "Headlight", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F1", "label": "Bell", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F2", "label": "Horn", "lockable": false, "icon": null, "selectedIcon": null },
+            { "name": "F3", "label": "Dynamic Brake", "lockable": true, "icon": null, "selectedIcon": null },
+            { "name": "F4", "label": null, "lockable": false, "icon": null, "selectedIcon": null },
+            { "name": "F5", "label": "Mars Light", "lockable": true, "icon": null, "selectedIcon": null }
+          ]
         }
       }
     }
