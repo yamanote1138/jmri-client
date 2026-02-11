@@ -171,7 +171,7 @@ export class WebSocketClient extends EventEmitter {
     // Send hello message in mock mode
     const helloResponse = await this.mockManager!.getMockResponse({ type: 'hello' });
     if (helloResponse) {
-      this.emit('message:received', helloResponse);
+      this.processMessage(helloResponse as AnyJmriMessage);
     }
   }
 
@@ -246,7 +246,7 @@ export class WebSocketClient extends EventEmitter {
       const response = await this.mockManager.getMockResponse(message);
       this.emit('message:sent', message);
       if (response) {
-        this.emit('message:received', response);
+        this.processMessage(response as AnyJmriMessage);
       }
       return response as T;
     }
@@ -329,62 +329,69 @@ export class WebSocketClient extends EventEmitter {
   private handleMessage(data: string): void {
     try {
       const message: AnyJmriMessage = JSON.parse(data);
-      this.emit('message:received', message);
+      this.processMessage(message);
+    } catch (error) {
+      this.emit('error', new Error(`Failed to parse message: ${error}`));
+    }
+  }
 
-      // Handle pong
-      if (message.type === 'pong') {
-        this.heartbeatManager.receivedPong();
+  /**
+   * Process a parsed message (called by both real and mock mode)
+   */
+  private processMessage(message: AnyJmriMessage): void {
+    this.emit('message:received', message);
+
+    // Handle pong
+    if (message.type === 'pong') {
+      this.heartbeatManager.receivedPong();
+      return;
+    }
+
+    // Handle hello
+    if (message.type === 'hello') {
+      this.emit('hello', message.data);
+      return;
+    }
+
+    // Handle response to request
+    if (message.id !== undefined) {
+      const pending = this.pendingRequests.get(message.id);
+      if (pending) {
+        clearTimeout(pending.timeout);
+        this.pendingRequests.delete(message.id);
+        pending.resolve(message);
         return;
       }
+    }
 
-      // Handle hello
-      if (message.type === 'hello') {
-        this.emit('hello', message.data);
-        return;
-      }
-
-      // Handle response to request
-      if (message.id !== undefined) {
-        const pending = this.pendingRequests.get(message.id);
-        if (pending) {
-          clearTimeout(pending.timeout);
-          this.pendingRequests.delete(message.id);
-          pending.resolve(message);
-          return;
-        }
-      }
-
-      // Handle responses without ID (like throttle responses from JMRI)
-      // Match by message type and data
-      if (message.id === undefined) {
-        for (const [id, pending] of this.pendingRequests.entries()) {
-          // Match by type
-          if (pending.messageType === message.type) {
-            // For throttle messages, also match by throttle name
-            if (message.type === 'throttle' && pending.matchKey) {
-              const throttleName = (message.data as any)?.throttle || (message.data as any)?.name;
-              if (throttleName === pending.matchKey) {
-                clearTimeout(pending.timeout);
-                this.pendingRequests.delete(id);
-                pending.resolve(message);
-                return;
-              }
-            } else {
-              // For other message types, just match by type
+    // Handle responses without ID (like throttle responses from JMRI)
+    // Match by message type and data
+    if (message.id === undefined) {
+      for (const [id, pending] of this.pendingRequests.entries()) {
+        // Match by type
+        if (pending.messageType === message.type) {
+          // For throttle messages, also match by throttle name
+          if (message.type === 'throttle' && pending.matchKey) {
+            const throttleName = (message.data as any)?.throttle || (message.data as any)?.name;
+            if (throttleName === pending.matchKey) {
               clearTimeout(pending.timeout);
               this.pendingRequests.delete(id);
               pending.resolve(message);
               return;
             }
+          } else {
+            // For other message types, just match by type
+            clearTimeout(pending.timeout);
+            this.pendingRequests.delete(id);
+            pending.resolve(message);
+            return;
           }
         }
       }
-
-      // Handle unsolicited updates (auto-subscriptions)
-      this.emit('update', message);
-    } catch (error) {
-      this.emit('error', new Error(`Failed to parse message: ${error}`));
     }
+
+    // Handle unsolicited updates (auto-subscriptions)
+    this.emit('update', message);
   }
 
   /**
