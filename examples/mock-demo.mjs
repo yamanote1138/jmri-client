@@ -33,7 +33,8 @@ async function demo() {
     console.log('[TEST 1] Get Roster');
     const roster = await client.getRoster();
     console.log(`✓ Found ${roster.length} locomotives:`);
-    for (const entry of roster) {
+    for (const wrapper of roster) {
+      const entry = wrapper.data;
       console.log(`  - ${entry.name}: ${entry.road} ${entry.model} (#${entry.address})`);
     }
     console.log();

@@ -61,7 +61,8 @@ describe('RosterManager', () => {
       const roster = await rosterManager.getRoster();
 
       expect(roster).toHaveLength(3);
-      expect(roster[0].name).toBe('Big Boy');
+      expect(roster[0].type).toBe('rosterEntry');
+      expect(roster[0].data.name).toBe('Big Boy');
       expect(mockClient.request).toHaveBeenCalledWith({
         type: 'roster',
         method: 'list'
@@ -96,8 +97,9 @@ describe('RosterManager', () => {
       const entry = await rosterManager.getRosterEntryByName('Big Boy');
 
       expect(entry).toBeDefined();
-      expect(entry?.name).toBe('Big Boy');
-      expect(entry?.address).toBe('3985');
+      expect(entry?.type).toBe('rosterEntry');
+      expect(entry?.data.name).toBe('Big Boy');
+      expect(entry?.data.address).toBe('3985');
     });
 
     it('should return undefined for non-existent name', async () => {
@@ -136,14 +138,14 @@ describe('RosterManager', () => {
       const entry = await rosterManager.getRosterEntryByAddress('754');
 
       expect(entry).toBeDefined();
-      expect(entry?.name).toBe('Diesel');
+      expect(entry?.data.name).toBe('Diesel');
     });
 
     it('should return entry by address number', async () => {
       const entry = await rosterManager.getRosterEntryByAddress(10);
 
       expect(entry).toBeDefined();
-      expect(entry?.name).toBe('Switcher');
+      expect(entry?.data.name).toBe('Switcher');
     });
 
     it('should return undefined for non-existent address', async () => {
@@ -167,28 +169,28 @@ describe('RosterManager', () => {
       const results = await rosterManager.searchRoster('Big');
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Big Boy');
+      expect(results[0].data.name).toBe('Big Boy');
     });
 
     it('should search by address', async () => {
       const results = await rosterManager.searchRoster('754');
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Diesel');
+      expect(results[0].data.name).toBe('Diesel');
     });
 
     it('should search by road', async () => {
       const results = await rosterManager.searchRoster('UP');
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Big Boy');
+      expect(results[0].data.name).toBe('Big Boy');
     });
 
     it('should be case insensitive', async () => {
       const results = await rosterManager.searchRoster('big boy');
 
       expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Big Boy');
+      expect(results[0].data.name).toBe('Big Boy');
     });
 
     it('should return multiple matches', async () => {

@@ -3,14 +3,14 @@
  */
 
 import { WebSocketClient } from '../core/websocket-client.js';
-import { RosterMessage, RosterEntry, RosterData, RosterResponse } from '../types/jmri-messages.js';
+import { RosterMessage, RosterData, RosterResponse, RosterEntryWrapper } from '../types/jmri-messages.js';
 
 /**
  * Manages locomotive roster
  */
 export class RosterManager {
   private client: WebSocketClient;
-  private rosterCache: Map<string, RosterEntry> = new Map();
+  private rosterCache: Map<string, RosterEntryWrapper> = new Map();
 
   constructor(client: WebSocketClient) {
     this.client = client;
@@ -19,7 +19,7 @@ export class RosterManager {
   /**
    * Get all roster entries
    */
-  async getRoster(): Promise<RosterEntry[]> {
+  async getRoster(): Promise<RosterEntryWrapper[]> {
     const message: RosterMessage = {
       type: 'roster',
       method: 'list'
@@ -38,7 +38,7 @@ export class RosterManager {
   /**
    * Get roster entry by name
    */
-  async getRosterEntryByName(name: string): Promise<RosterEntry | undefined> {
+  async getRosterEntryByName(name: string): Promise<RosterEntryWrapper | undefined> {
     // Check cache first
     if (this.rosterCache.has(name)) {
       return this.rosterCache.get(name);
@@ -52,7 +52,7 @@ export class RosterManager {
   /**
    * Get roster entry by address
    */
-  async getRosterEntryByAddress(address: string | number): Promise<RosterEntry | undefined> {
+  async getRosterEntryByAddress(address: string | number): Promise<RosterEntryWrapper | undefined> {
     // Ensure roster is loaded
     if (this.rosterCache.size === 0) {
       await this.getRoster();
@@ -60,9 +60,9 @@ export class RosterManager {
 
     const addressStr = address.toString();
 
-    for (const entry of this.rosterCache.values()) {
-      if (entry.address === addressStr) {
-        return entry;
+    for (const wrapper of this.rosterCache.values()) {
+      if (wrapper.data.address === addressStr) {
+        return wrapper;
       }
     }
 
@@ -72,23 +72,24 @@ export class RosterManager {
   /**
    * Search roster by partial name match
    */
-  async searchRoster(query: string): Promise<RosterEntry[]> {
+  async searchRoster(query: string): Promise<RosterEntryWrapper[]> {
     // Ensure roster is loaded
     if (this.rosterCache.size === 0) {
       await this.getRoster();
     }
 
     const lowerQuery = query.toLowerCase();
-    const results: RosterEntry[] = [];
+    const results: RosterEntryWrapper[] = [];
 
-    for (const entry of this.rosterCache.values()) {
+    for (const wrapper of this.rosterCache.values()) {
+      const entry = wrapper.data;
       if (
         entry.name.toLowerCase().includes(lowerQuery) ||
         entry.address.includes(query) ||
         entry.road?.toLowerCase().includes(lowerQuery) ||
         entry.number?.includes(query)
       ) {
-        results.push(entry);
+        results.push(wrapper);
       }
     }
 
@@ -98,7 +99,7 @@ export class RosterManager {
   /**
    * Get cached roster (no network request)
    */
-  getCachedRoster(): RosterEntry[] {
+  getCachedRoster(): RosterEntryWrapper[] {
     return Array.from(this.rosterCache.values());
   }
 
@@ -115,18 +116,24 @@ export class RosterManager {
   private updateCache(rosterData: RosterResponse | RosterData): void {
     this.rosterCache.clear();
 
-    // Handle array format (real JMRI server)
+    // Handle array format (real JMRI server) - store wrapped entries
     if (Array.isArray(rosterData)) {
       for (const wrapper of rosterData) {
         if (wrapper.type === 'rosterEntry' && wrapper.data) {
-          this.rosterCache.set(wrapper.data.name, wrapper.data);
+          this.rosterCache.set(wrapper.data.name, wrapper);
         }
       }
     }
-    // Handle legacy keyed object format (for backward compatibility)
+    // Handle legacy keyed object format (for backward compatibility) - wrap entries
     else {
+      let id = 1;
       for (const [name, entry] of Object.entries(rosterData)) {
-        this.rosterCache.set(name, entry);
+        const wrapper: RosterEntryWrapper = {
+          type: 'rosterEntry',
+          data: entry,
+          id: id++
+        };
+        this.rosterCache.set(name, wrapper);
       }
     }
   }

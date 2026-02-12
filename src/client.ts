@@ -8,7 +8,7 @@ import { PowerManager } from './managers/power-manager.js';
 import { RosterManager } from './managers/roster-manager.js';
 import { ThrottleManager } from './managers/throttle-manager.js';
 import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
-import { PowerState, RosterEntry } from './types/jmri-messages.js';
+import { PowerState, RosterEntryWrapper } from './types/jmri-messages.js';
 import { ConnectionState } from './types/events.js';
 import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
@@ -168,28 +168,28 @@ export class JmriClient extends EventEmitter {
   /**
    * Get all roster entries
    */
-  async getRoster(): Promise<RosterEntry[]> {
+  async getRoster(): Promise<RosterEntryWrapper[]> {
     return this.rosterManager.getRoster();
   }
 
   /**
    * Get roster entry by name
    */
-  async getRosterEntryByName(name: string): Promise<RosterEntry | undefined> {
+  async getRosterEntryByName(name: string): Promise<RosterEntryWrapper | undefined> {
     return this.rosterManager.getRosterEntryByName(name);
   }
 
   /**
    * Get roster entry by address
    */
-  async getRosterEntryByAddress(address: string | number): Promise<RosterEntry | undefined> {
+  async getRosterEntryByAddress(address: string | number): Promise<RosterEntryWrapper | undefined> {
     return this.rosterManager.getRosterEntryByAddress(address);
   }
 
   /**
    * Search roster by partial name match
    */
-  async searchRoster(query: string): Promise<RosterEntry[]> {
+  async searchRoster(query: string): Promise<RosterEntryWrapper[]> {
     return this.rosterManager.searchRoster(query);
   }
 
