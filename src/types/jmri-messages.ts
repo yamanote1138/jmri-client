@@ -120,7 +120,7 @@ export interface FunctionKey {
 }
 
 /**
- * Roster entry
+ * Roster entry data
  */
 export interface RosterEntry {
   name: string;
@@ -129,28 +129,50 @@ export interface RosterEntry {
   road?: string;
   number?: string;
   mfg?: string;
+  decoderModel?: string;
+  decoderFamily?: string;
   model?: string;
   comment?: string;
-  maxSpeed?: number;
-  imageFilePath?: string;
-  iconFilePath?: string;
+  maxSpeedPct?: number;
+  image?: string | null;
+  icon?: string | null;
+  shuntingFunction?: string;
+  owner?: string;
+  dateModified?: string;
   functionKeys?: FunctionKey[];
+  attributes?: any[];
+  rosterGroups?: string[];
 }
 
 /**
- * Roster data structure
+ * Roster entry wrapper (as returned by JMRI server)
  */
-export interface RosterData {
-  [key: string]: RosterEntry;
+export interface RosterEntryWrapper {
+  type: 'rosterEntry';
+  data: RosterEntry;
+  id: number;
 }
 
 /**
- * Roster message
+ * Roster response (array of roster entries)
+ */
+export type RosterResponse = RosterEntryWrapper[];
+
+/**
+ * Roster message (deprecated - kept for backward compatibility)
  */
 export interface RosterMessage extends JmriMessage {
   type: 'roster';
   method: 'list';
-  data?: RosterData;
+  data?: RosterResponse;
+}
+
+/**
+ * Legacy roster data structure (deprecated - kept for backward compatibility)
+ * @deprecated Use RosterResponse instead
+ */
+export interface RosterData {
+  [key: string]: RosterEntry;
 }
 
 /**
@@ -174,10 +196,15 @@ export interface HelloMessage extends JmriMessage {
   type: 'hello';
   data?: {
     JMRI?: string;
-    JSON?: string;
-    Railroad?: string;
+    json?: string;
+    version?: string;
+    heartbeat?: number;
+    railroad?: string;
     node?: string;
     activeProfile?: string;
+    // Legacy fields (deprecated but kept for backward compatibility)
+    JSON?: string;
+    Railroad?: string;
   };
 }
 

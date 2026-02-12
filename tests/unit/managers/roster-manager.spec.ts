@@ -1,6 +1,6 @@
 import { RosterManager } from '../../../src/managers/roster-manager';
 import { WebSocketClient } from '../../../src/core/websocket-client';
-import { RosterMessage, RosterData } from '../../../src/types/jmri-messages';
+import { RosterMessage, RosterResponse } from '../../../src/types/jmri-messages';
 
 jest.mock('../../../src/core/websocket-client');
 
@@ -8,26 +8,38 @@ describe('RosterManager', () => {
   let rosterManager: RosterManager;
   let mockClient: jest.Mocked<WebSocketClient>;
 
-  const mockRosterData: RosterData = {
-    'Big Boy': {
-      name: 'Big Boy',
-      address: '3985',
-      isLongAddress: true,
-      road: 'UP',
-      model: '4-8-8-4'
+  const mockRosterData: RosterResponse = [
+    {
+      type: 'rosterEntry',
+      data: {
+        name: 'Big Boy',
+        address: '3985',
+        isLongAddress: true,
+        road: 'UP',
+        model: '4-8-8-4'
+      },
+      id: 1
     },
-    'Diesel': {
-      name: 'Diesel',
-      address: '754',
-      isLongAddress: true,
-      road: 'CSX'
+    {
+      type: 'rosterEntry',
+      data: {
+        name: 'Diesel',
+        address: '754',
+        isLongAddress: true,
+        road: 'CSX'
+      },
+      id: 2
     },
-    'Switcher': {
-      name: 'Switcher',
-      address: '10',
-      isLongAddress: false
+    {
+      type: 'rosterEntry',
+      data: {
+        name: 'Switcher',
+        address: '10',
+        isLongAddress: false
+      },
+      id: 3
     }
-  };
+  ];
 
   beforeEach(() => {
     mockClient = {

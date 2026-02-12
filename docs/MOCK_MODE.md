@@ -51,8 +51,12 @@ Connection establishment response with JMRI version info:
   "type": "hello",
   "data": {
     "JMRI": "5.9.2",
-    "JSON": "5.0",
-    "Railroad": "Demo Railroad"
+    "json": "5.0",
+    "version": "v5",
+    "heartbeat": 13500,
+    "railroad": "Demo Railroad",
+    "node": "jmri-server",
+    "activeProfile": "Demo Profile"
   }
 }
 ```
@@ -97,7 +101,7 @@ async function demo() {
 
   // Get roster
   const roster = await client.getRoster();
-  console.log(`Found ${Object.keys(roster).length} locomotives`);
+  console.log(`Found ${roster.length} locomotives`);
 
   // Turn power on
   await client.powerOn();
@@ -132,8 +136,8 @@ The mock data is shared between the mock system and unit tests, ensuring consist
 ```typescript
 import { mockData, MockResponseManager } from 'jmri-client';
 
-// Access mock data directly
-const rosterData = mockData.roster.list.data;
+// Access mock data directly (array of roster entry wrappers)
+const rosterData = mockData.roster.list;
 
 // Or use the response manager
 const mockManager = new MockResponseManager();

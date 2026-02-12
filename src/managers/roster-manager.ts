@@ -3,7 +3,7 @@
  */
 
 import { WebSocketClient } from '../core/websocket-client.js';
-import { RosterMessage, RosterEntry, RosterData } from '../types/jmri-messages.js';
+import { RosterMessage, RosterEntry, RosterData, RosterResponse } from '../types/jmri-messages.js';
 
 /**
  * Manages locomotive roster
@@ -112,11 +112,22 @@ export class RosterManager {
   /**
    * Update internal cache from roster data
    */
-  private updateCache(rosterData: RosterData): void {
+  private updateCache(rosterData: RosterResponse | RosterData): void {
     this.rosterCache.clear();
 
-    for (const [name, entry] of Object.entries(rosterData)) {
-      this.rosterCache.set(name, entry);
+    // Handle array format (real JMRI server)
+    if (Array.isArray(rosterData)) {
+      for (const wrapper of rosterData) {
+        if (wrapper.type === 'rosterEntry' && wrapper.data) {
+          this.rosterCache.set(wrapper.data.name, wrapper.data);
+        }
+      }
+    }
+    // Handle legacy keyed object format (for backward compatibility)
+    else {
+      for (const [name, entry] of Object.entries(rosterData)) {
+        this.rosterCache.set(name, entry);
+      }
     }
   }
 }

@@ -98,13 +98,18 @@ export class MockResponseManager {
    */
   private getRosterResponse(message: JmriMessage): RosterMessage {
     if (message.type === 'roster' && message.method === 'list') {
-      return JSON.parse(JSON.stringify(mockData.roster.list));
+      // Return the array of roster entries directly
+      return {
+        type: 'roster',
+        method: 'list',
+        data: JSON.parse(JSON.stringify(mockData.roster.list))
+      };
     }
 
     return {
       type: 'roster',
       method: 'list',
-      data: {}
+      data: []
     };
   }
 

@@ -32,9 +32,9 @@ async function demo() {
     // Test 1: Get roster
     console.log('[TEST 1] Get Roster');
     const roster = await client.getRoster();
-    console.log(`✓ Found ${Object.keys(roster).length} locomotives:`);
-    for (const [name, entry] of Object.entries(roster)) {
-      console.log(`  - ${name}: ${entry.road} ${entry.model} (#${entry.address})`);
+    console.log(`✓ Found ${roster.length} locomotives:`);
+    for (const entry of roster) {
+      console.log(`  - ${entry.name}: ${entry.road} ${entry.model} (#${entry.address})`);
     }
     console.log();
 
