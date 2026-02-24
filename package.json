@@ -47,6 +47,10 @@
   "private": false,
   "readmeFilename": "README.md",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/yamanote1138/jmri-client.git"
