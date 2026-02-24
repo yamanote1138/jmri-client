@@ -11,7 +11,7 @@ await esbuild.build({
   format: 'esm',
   platform: 'browser',
   outfile: 'dist/browser/jmri-client.js',
-  sourcemap: true,
+  sourcemap: false,
   target: ['es2020'],
   external: [] // Bundle all dependencies
 });
