@@ -186,6 +186,13 @@ export const mockData = {
       }
     }
   },
+  "turnout": {
+    "list": [
+      { "type": "turnout", "data": { "name": "LT1", "userName": "Main Diverge", "state": 2 } },
+      { "type": "turnout", "data": { "name": "LT2", "userName": "Yard Lead", "state": 2 } },
+      { "type": "turnout", "data": { "name": "LT3", "userName": "Siding Entry", "state": 4 } }
+    ]
+  },
   "ping": {
     "type": "ping"
   },

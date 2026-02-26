@@ -7,8 +7,9 @@ import { WebSocketClient } from './core/websocket-client.js';
 import { PowerManager } from './managers/power-manager.js';
 import { RosterManager } from './managers/roster-manager.js';
 import { ThrottleManager } from './managers/throttle-manager.js';
+import { TurnoutManager } from './managers/turnout-manager.js';
 import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
-import { PowerState, RosterEntryWrapper } from './types/jmri-messages.js';
+import { PowerState, RosterEntryWrapper, TurnoutState, TurnoutData } from './types/jmri-messages.js';
 import { ConnectionState } from './types/events.js';
 import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
@@ -22,6 +23,7 @@ export class JmriClient extends EventEmitter {
   private powerManager: PowerManager;
   private rosterManager: RosterManager;
   private throttleManager: ThrottleManager;
+  private turnoutManager: TurnoutManager;
 
   /**
    * Create a new JMRI client
@@ -52,6 +54,7 @@ export class JmriClient extends EventEmitter {
     this.powerManager = new PowerManager(this.wsClient);
     this.rosterManager = new RosterManager(this.wsClient);
     this.throttleManager = new ThrottleManager(this.wsClient);
+    this.turnoutManager = new TurnoutManager(this.wsClient);
 
     // Forward events from WebSocket client
     this.wsClient.on('connected', () => this.emit('connected'));
@@ -74,6 +77,9 @@ export class JmriClient extends EventEmitter {
     // Forward events from managers
     this.powerManager.on('power:changed', (state: PowerState) =>
       this.emit('power:changed', state)
+    );
+    this.turnoutManager.on('turnout:changed', (name: string, state: TurnoutState) =>
+      this.emit('turnout:changed', name, state)
     );
     this.throttleManager.on('throttle:acquired', (id: string) =>
       this.emit('throttle:acquired', id)
@@ -191,6 +197,59 @@ export class JmriClient extends EventEmitter {
    */
   async searchRoster(query: string): Promise<RosterEntryWrapper[]> {
     return this.rosterManager.searchRoster(query);
+  }
+
+  // ============================================================================
+  // Turnout Control
+  // ============================================================================
+
+  /**
+   * Get the current state of a turnout
+   */
+  async getTurnout(name: string): Promise<TurnoutState> {
+    return this.turnoutManager.getTurnout(name);
+  }
+
+  /**
+   * Set a turnout to the given state
+   */
+  async setTurnout(name: string, state: TurnoutState): Promise<void> {
+    return this.turnoutManager.setTurnout(name, state);
+  }
+
+  /**
+   * Throw a turnout (diverging route)
+   */
+  async throwTurnout(name: string): Promise<void> {
+    return this.turnoutManager.throwTurnout(name);
+  }
+
+  /**
+   * Close a turnout (straight through / normal)
+   */
+  async closeTurnout(name: string): Promise<void> {
+    return this.turnoutManager.closeTurnout(name);
+  }
+
+  /**
+   * List all turnouts known to JMRI
+   */
+  async listTurnouts(): Promise<TurnoutData[]> {
+    return this.turnoutManager.listTurnouts();
+  }
+
+  /**
+   * Get cached turnout state without a network request
+   */
+  getTurnoutState(name: string): TurnoutState | undefined {
+    return this.turnoutManager.getTurnoutState(name);
+  }
+
+  /**
+   * Get all cached turnout states
+   */
+  getCachedTurnouts(): Map<string, TurnoutState> {
+    return this.turnoutManager.getCachedTurnouts();
   }
 
   // ============================================================================
