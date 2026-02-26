@@ -176,6 +176,56 @@ export interface RosterData {
 }
 
 /**
+ * Turnout state values (from JMRI JSON protocol constants)
+ * UNKNOWN = 0 (state cannot be determined)
+ * CLOSED = 2 (straight through / normal position)
+ * THROWN = 4 (diverging route position)
+ * INCONSISTENT = 8 (contradictory feedback state)
+ */
+export enum TurnoutState {
+  UNKNOWN = 0,
+  CLOSED = 2,
+  THROWN = 4,
+  INCONSISTENT = 8
+}
+
+/**
+ * Convert TurnoutState enum to human-readable string
+ */
+export function turnoutStateToString(state: TurnoutState): string {
+  switch (state) {
+    case TurnoutState.CLOSED:
+      return 'CLOSED';
+    case TurnoutState.THROWN:
+      return 'THROWN';
+    case TurnoutState.INCONSISTENT:
+      return 'INCONSISTENT';
+    case TurnoutState.UNKNOWN:
+    default:
+      return 'UNKNOWN';
+  }
+}
+
+/**
+ * Turnout data structure
+ */
+export interface TurnoutData {
+  name: string;
+  userName?: string;
+  state?: TurnoutState;
+  inverted?: boolean;
+  feedback?: string;
+}
+
+/**
+ * Turnout message
+ */
+export interface TurnoutMessage extends JmriMessage {
+  type: 'turnout';
+  data?: TurnoutData;
+}
+
+/**
  * Ping message (heartbeat)
  */
 export interface PingMessage extends JmriMessage {
@@ -233,6 +283,7 @@ export type AnyJmriMessage =
   | PowerMessage
   | ThrottleMessage
   | RosterMessage
+  | TurnoutMessage
   | PingMessage
   | PongMessage
   | HelloMessage

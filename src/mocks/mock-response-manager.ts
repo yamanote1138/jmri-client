@@ -3,7 +3,7 @@
  * Generates mock JMRI responses for testing and demo purposes
  */
 
-import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, RosterMessage, HelloMessage, PongMessage, GoodbyeMessage } from '../types/jmri-messages.js';
+import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, RosterMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage } from '../types/jmri-messages.js';
 import { mockData } from './mock-data.js';
 
 export interface MockResponseManagerOptions {
@@ -26,6 +26,11 @@ export class MockResponseManager {
   private responseDelay: number;
   private powerState: PowerState;
   private throttles: Map<string, any> = new Map();
+  private turnouts: Map<string, TurnoutState> = new Map([
+    ['LT1', TurnoutState.CLOSED],
+    ['LT2', TurnoutState.CLOSED],
+    ['LT3', TurnoutState.THROWN]
+  ]);
 
   constructor(options: MockResponseManagerOptions = {}) {
     this.responseDelay = options.responseDelay ?? 50;
@@ -54,6 +59,9 @@ export class MockResponseManager {
 
       case 'throttle':
         return this.getThrottleResponse(message);
+
+      case 'turnout':
+        return this.getTurnoutResponse(message);
 
       case 'ping':
         return this.getPingResponse();
@@ -201,6 +209,30 @@ export class MockResponseManager {
   }
 
   /**
+   * Get turnout response
+   */
+  private getTurnoutResponse(message: JmriMessage): TurnoutMessage | any {
+    // List all turnouts
+    if (message.method === 'list') {
+      return JSON.parse(JSON.stringify(mockData.turnout.list));
+    }
+
+    const name = message.data?.name;
+    if (!name) {
+      return { type: 'turnout', data: { name: '', state: TurnoutState.UNKNOWN } };
+    }
+
+    // Set turnout state
+    if (message.method === 'post' && message.data?.state !== undefined) {
+      this.turnouts.set(name, message.data.state);
+    }
+
+    // Get or confirm current state
+    const state = this.turnouts.get(name) ?? TurnoutState.UNKNOWN;
+    return { type: 'turnout', data: { name, state } };
+  }
+
+  /**
    * Get ping response (pong)
    */
   private getPingResponse(): PongMessage {
@@ -236,11 +268,23 @@ export class MockResponseManager {
   }
 
   /**
+   * Get all turnout states (for testing)
+   */
+  getTurnouts(): Map<string, TurnoutState> {
+    return this.turnouts;
+  }
+
+  /**
    * Reset all state (for testing)
    */
   reset(): void {
     this.powerState = PowerState.OFF;
     this.throttles.clear();
+    this.turnouts = new Map([
+      ['LT1', TurnoutState.CLOSED],
+      ['LT2', TurnoutState.CLOSED],
+      ['LT3', TurnoutState.THROWN]
+    ]);
   }
 
   /**
