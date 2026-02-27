@@ -130,12 +130,14 @@ describe('TurnoutManager', () => {
 
   describe('listTurnouts', () => {
     it('should request a list of all turnouts', async () => {
-      const listResponse = [
-        { type: 'turnout', data: { name: 'LT1', state: TurnoutState.CLOSED } },
-        { type: 'turnout', data: { name: 'LT2', state: TurnoutState.THROWN } }
-      ];
-
-      mockClient.request.mockResolvedValue(listResponse);
+      mockClient.request.mockResolvedValue({
+        type: 'turnout',
+        data: [
+          { type: 'turnout', data: { name: 'LT1', state: TurnoutState.CLOSED } },
+          { type: 'turnout', data: { name: 'LT2', state: TurnoutState.THROWN } }
+        ],
+        id: 1
+      });
 
       const turnouts = await turnoutManager.listTurnouts();
 
@@ -149,10 +151,14 @@ describe('TurnoutManager', () => {
     });
 
     it('should cache states from the list response', async () => {
-      mockClient.request.mockResolvedValue([
-        { type: 'turnout', data: { name: 'LT1', state: TurnoutState.CLOSED } },
-        { type: 'turnout', data: { name: 'LT2', state: TurnoutState.THROWN } }
-      ]);
+      mockClient.request.mockResolvedValue({
+        type: 'turnout',
+        data: [
+          { type: 'turnout', data: { name: 'LT1', state: TurnoutState.CLOSED } },
+          { type: 'turnout', data: { name: 'LT2', state: TurnoutState.THROWN } }
+        ],
+        id: 1
+      });
 
       await turnoutManager.listTurnouts();
 

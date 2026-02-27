@@ -1,6 +1,6 @@
 import { RosterManager } from '../../../src/managers/roster-manager';
 import { WebSocketClient } from '../../../src/core/websocket-client';
-import { RosterMessage, RosterResponse } from '../../../src/types/jmri-messages';
+import { RosterResponse } from '../../../src/types/jmri-messages';
 
 jest.mock('../../../src/core/websocket-client');
 
@@ -50,13 +50,10 @@ describe('RosterManager', () => {
 
   describe('getRoster', () => {
     it('should fetch and return all roster entries', async () => {
-      const response: RosterMessage = {
+      mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
-      };
-
-      mockClient.request.mockResolvedValue(response);
+      });
 
       const roster = await rosterManager.getRoster();
 
@@ -72,7 +69,6 @@ describe('RosterManager', () => {
     it('should cache roster entries', async () => {
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
 
@@ -87,7 +83,6 @@ describe('RosterManager', () => {
     beforeEach(async () => {
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
       await rosterManager.getRoster();
@@ -113,7 +108,6 @@ describe('RosterManager', () => {
 
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
 
@@ -128,7 +122,6 @@ describe('RosterManager', () => {
     beforeEach(async () => {
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
       await rosterManager.getRoster();
@@ -159,7 +152,6 @@ describe('RosterManager', () => {
     beforeEach(async () => {
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
       await rosterManager.getRoster();
@@ -216,7 +208,6 @@ describe('RosterManager', () => {
     it('should return cached entries without network request', async () => {
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
 
@@ -235,7 +226,6 @@ describe('RosterManager', () => {
     it('should clear cached roster entries', async () => {
       mockClient.request.mockResolvedValue({
         type: 'roster',
-        method: 'list',
         data: mockRosterData
       });
 

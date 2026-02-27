@@ -84,7 +84,9 @@ export class TurnoutManager extends EventEmitter {
     };
 
     const response = await this.client.request<any>(message);
-    const entries: TurnoutData[] = Array.isArray(response) ? response.map((r: any) => r.data ?? r) : [];
+    const entries: TurnoutData[] = Array.isArray(response?.data)
+      ? response.data.map((r: any) => r.data ?? r)
+      : [];
 
     for (const entry of entries) {
       if (entry.name && entry.state !== undefined) {

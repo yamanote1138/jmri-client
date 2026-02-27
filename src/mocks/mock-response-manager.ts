@@ -3,7 +3,7 @@
  * Generates mock JMRI responses for testing and demo purposes
  */
 
-import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, RosterMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage } from '../types/jmri-messages.js';
+import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage } from '../types/jmri-messages.js';
 import { mockData } from './mock-data.js';
 
 export interface MockResponseManagerOptions {
@@ -104,19 +104,16 @@ export class MockResponseManager {
   /**
    * Get roster response
    */
-  private getRosterResponse(message: JmriMessage): RosterMessage {
+  private getRosterResponse(message: JmriMessage): JmriMessage {
     if (message.type === 'roster' && message.method === 'list') {
-      // Return the array of roster entries directly
       return {
         type: 'roster',
-        method: 'list',
         data: JSON.parse(JSON.stringify(mockData.roster.list))
       };
     }
 
     return {
       type: 'roster',
-      method: 'list',
       data: []
     };
   }
@@ -214,7 +211,10 @@ export class MockResponseManager {
   private getTurnoutResponse(message: JmriMessage): TurnoutMessage | any {
     // List all turnouts
     if (message.method === 'list') {
-      return JSON.parse(JSON.stringify(mockData.turnout.list));
+      return {
+        type: 'turnout',
+        data: JSON.parse(JSON.stringify(mockData.turnout.list))
+      };
     }
 
     const name = message.data?.name;
