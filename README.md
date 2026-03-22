@@ -19,6 +19,7 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 - ✅ **Heartbeat monitoring** - Automatic ping/pong keepalive
 - ✅ **TypeScript** - Full type definitions included
 - ✅ **Dual module support** - ESM and CommonJS
+- ✅ **Extensible** - Subclass `JmriClient` to add support for additional JMRI object types
 
 ## Installation
 
@@ -104,6 +105,37 @@ client.on('reconnecting', (attempt, delay) => {
   console.log(`Reconnecting attempt ${attempt} in ${delay}ms`);
 });
 ```
+
+### Extending JmriClient
+
+`JmriClient` exposes its `wsClient` as `protected`, so you can subclass it to add support for JMRI object types not yet built in (e.g., sensors, lights, routes, blocks):
+
+```typescript
+import { JmriClient } from 'jmri-client';
+import type { PartialClientOptions } from 'jmri-client';
+
+class MyExtendedClient extends JmriClient {
+  constructor(options?: PartialClientOptions) {
+    super(options);
+
+    // this.wsClient is available — use it to send/receive JMRI JSON messages
+    this.wsClient.on('update', (message: any) => {
+      if (message.type === 'sensor') {
+        this.emit('sensor:changed', message.data.name, message.data.state);
+      }
+    });
+  }
+
+  async listSensors() {
+    const response = await this.wsClient.request({ type: 'sensor', method: 'list' });
+    return Array.isArray(response?.data)
+      ? response.data.map((r: any) => r.data ?? r)
+      : [];
+  }
+}
+```
+
+`WebSocketClient` is also exported for direct use if you need it. See its `send()`, `request()`, and `on('update', ...)` API for low-level messaging.
 
 ## Testing
 

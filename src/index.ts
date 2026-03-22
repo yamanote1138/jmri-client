@@ -4,6 +4,7 @@
  */
 
 export { JmriClient } from './client.js';
+export { WebSocketClient } from './core/websocket-client.js';
 
 // Export types
 export {

@@ -19,7 +19,7 @@ import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './ty
  */
 export class JmriClient extends EventEmitter {
   private options: JmriClientOptions;
-  private wsClient: WebSocketClient;
+  protected wsClient: WebSocketClient;
   private powerManager: PowerManager;
   private rosterManager: RosterManager;
   private throttleManager: ThrottleManager;
