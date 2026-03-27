@@ -113,6 +113,37 @@ client.on('connected', async () => {
 });
 ```
 
+## Light Control
+
+```typescript
+import { JmriClient, LightState } from 'jmri-client';
+
+const client = new JmriClient({ host: 'jmri.local' });
+
+client.on('connected', async () => {
+  // List all lights
+  const lights = await client.listLights();
+  console.log(`Found ${lights.length} lights`);
+
+  for (const light of lights) {
+    console.log(`  ${light.userName ?? light.name}: ${light.state === LightState.ON ? 'ON' : 'OFF'}`);
+  }
+
+  // Turn a light on
+  await client.turnOnLight('IL1');
+  console.log('Light IL1 turned ON');
+
+  // Turn it off again
+  await client.turnOffLight('IL1');
+  console.log('Light IL1 turned OFF');
+});
+
+// Monitor light changes in real-time
+client.on('light:changed', (name, state) => {
+  console.log(`Light ${name} is now ${state === LightState.ON ? 'ON' : 'OFF'}`);
+});
+```
+
 ## Roster Search
 
 ```typescript

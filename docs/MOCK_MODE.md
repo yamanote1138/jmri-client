@@ -72,6 +72,18 @@ Three sample locomotives:
 
 Each includes realistic function key mappings (F0-F4).
 
+### Lights
+Three sample lights:
+- **IL1** - Yard Light (OFF)
+- **IL2** - Platform Light (OFF)
+- **IL3** - Signal Lamp (ON)
+
+### Turnouts
+Three sample turnouts:
+- **LT1** - Main Diverge (CLOSED)
+- **LT2** - Yard Lead (CLOSED)
+- **LT3** - Siding Entry (THROWN)
+
 ### Throttle Responses
 Supports all throttle operations:
 - Acquire/release
@@ -152,6 +164,8 @@ const response = await mockManager.getMockResponse({
 The mock system maintains state for realistic behavior:
 
 - **Power state** - Remembers if power is ON or OFF
+- **Light states** - Tracks ON/OFF state per light
+- **Turnout states** - Tracks CLOSED/THROWN state per turnout
 - **Throttles** - Tracks acquired throttles and their states
 - **Speed/Direction** - Maintains current speed and direction per throttle
 - **Functions** - Tracks function key states (F0-F28)
@@ -196,6 +210,8 @@ Mock mode implements the full JMRI client API. All methods work identically:
 - ✅ `connect()` / `disconnect()`
 - ✅ `getPower()` / `powerOn()` / `powerOff()`
 - ✅ `getRoster()`
+- ✅ `getLight()` / `setLight()` / `turnOnLight()` / `turnOffLight()` / `listLights()`
+- ✅ `getTurnout()` / `setTurnout()` / `throwTurnout()` / `closeTurnout()` / `listTurnouts()`
 - ✅ `acquireThrottle()` / `releaseThrottle()`
 - ✅ `setThrottleSpeed()`
 - ✅ `setThrottleDirection()`

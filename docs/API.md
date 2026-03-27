@@ -42,6 +42,12 @@ client.on('error', (error: Error) => { });
 // Power events
 client.on('power:changed', (state: PowerState) => { });
 
+// Turnout events
+client.on('turnout:changed', (name: string, state: TurnoutState) => { });
+
+// Light events
+client.on('light:changed', (name: string, state: LightState) => { });
+
 // Throttle events
 client.on('throttle:acquired', (throttleId: string) => { });
 client.on('throttle:updated', (throttleId: string, data: any) => { });
@@ -106,6 +112,38 @@ const entry = await client.getRosterEntryByAddress(3);
 const results = await client.searchRoster('steam');
 ```
 
+## Light Control
+
+```typescript
+// Get current light state
+const state: LightState = await client.getLight('IL1');
+
+// LightState enum values (from JMRI JSON protocol):
+// LightState.UNKNOWN = 0  (state cannot be determined)
+// LightState.ON = 2       (light is on)
+// LightState.OFF = 4      (light is off)
+
+// Set light state
+await client.setLight('IL1', LightState.ON);
+await client.turnOnLight('IL1');   // Convenience method
+await client.turnOffLight('IL1');  // Convenience method
+
+// List all lights
+const lights: LightData[] = await client.listLights();
+for (const light of lights) {
+  console.log(`${light.userName}: ${light.state === LightState.ON ? 'ON' : 'OFF'}`);
+}
+
+// Cached state (no network request)
+const cachedState = client.getLightState('IL1');
+const allCached = client.getCachedLights();
+
+// Listen for light changes
+client.on('light:changed', (name: string, state: LightState) => {
+  console.log(`Light ${name} changed to ${state === LightState.ON ? 'ON' : 'OFF'}`);
+});
+```
+
 ## Throttle Control
 
 ```typescript
@@ -165,11 +203,14 @@ const state = client.getConnectionState();
 ## Utility Functions
 
 ```typescript
-import { powerStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
+import { powerStateToString, lightStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
 
 // Convert PowerState enum to readable string
 const stateStr = powerStateToString(PowerState.ON);  // 'ON'
 const stateStr2 = powerStateToString(PowerState.UNKNOWN);  // 'UNKNOWN'
+
+// Convert LightState enum to readable string
+const lightStr = lightStateToString(LightState.ON);  // 'ON'
 
 // Validate throttle function key
 isThrottleFunctionKey('F0');  // true
@@ -189,7 +230,11 @@ import {
   JmriClient,
   JmriClientOptions,
   PowerState,
+  LightState,
+  LightData,
   RosterEntry,
+  TurnoutState,
+  TurnoutData,
   ThrottleState,
   ThrottleFunctionKey,
   ConnectionState
