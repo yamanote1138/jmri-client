@@ -186,6 +186,13 @@ export const mockData = {
       }
     }
   },
+  "light": {
+    "list": [
+      { "type": "light", "data": { "name": "IL1", "userName": "Yard Light", "comment": null, "properties": [], "state": 4 } },
+      { "type": "light", "data": { "name": "IL2", "userName": "Platform Light", "comment": null, "properties": [], "state": 4 } },
+      { "type": "light", "data": { "name": "IL3", "userName": "Signal Lamp", "comment": null, "properties": [], "state": 2 } }
+    ]
+  },
   "turnout": {
     "list": [
       { "type": "turnout", "data": { "name": "LT1", "userName": "Main Diverge", "state": 2 } },

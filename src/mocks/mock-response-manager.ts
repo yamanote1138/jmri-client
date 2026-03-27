@@ -3,7 +3,7 @@
  * Generates mock JMRI responses for testing and demo purposes
  */
 
-import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage } from '../types/jmri-messages.js';
+import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage, LightState, LightMessage } from '../types/jmri-messages.js';
 import { mockData } from './mock-data.js';
 
 export interface MockResponseManagerOptions {
@@ -26,6 +26,11 @@ export class MockResponseManager {
   private responseDelay: number;
   private powerState: PowerState;
   private throttles: Map<string, any> = new Map();
+  private lights: Map<string, LightState> = new Map([
+    ['IL1', LightState.OFF],
+    ['IL2', LightState.OFF],
+    ['IL3', LightState.ON]
+  ]);
   private turnouts: Map<string, TurnoutState> = new Map([
     ['LT1', TurnoutState.CLOSED],
     ['LT2', TurnoutState.CLOSED],
@@ -59,6 +64,9 @@ export class MockResponseManager {
 
       case 'throttle':
         return this.getThrottleResponse(message);
+
+      case 'light':
+        return this.getLightResponse(message);
 
       case 'turnout':
         return this.getTurnoutResponse(message);
@@ -206,6 +214,33 @@ export class MockResponseManager {
   }
 
   /**
+   * Get light response
+   */
+  private getLightResponse(message: JmriMessage): LightMessage | any {
+    // List all lights
+    if (message.method === 'list') {
+      return {
+        type: 'light',
+        data: JSON.parse(JSON.stringify(mockData.light.list))
+      };
+    }
+
+    const name = message.data?.name;
+    if (!name) {
+      return { type: 'light', data: { name: '', state: LightState.UNKNOWN } };
+    }
+
+    // Set light state
+    if (message.method === 'post' && message.data?.state !== undefined) {
+      this.lights.set(name, message.data.state);
+    }
+
+    // Get or confirm current state
+    const state = this.lights.get(name) ?? LightState.UNKNOWN;
+    return { type: 'light', data: { name, state } };
+  }
+
+  /**
    * Get turnout response
    */
   private getTurnoutResponse(message: JmriMessage): TurnoutMessage | any {
@@ -268,6 +303,13 @@ export class MockResponseManager {
   }
 
   /**
+   * Get all light states (for testing)
+   */
+  getLights(): Map<string, LightState> {
+    return this.lights;
+  }
+
+  /**
    * Get all turnout states (for testing)
    */
   getTurnouts(): Map<string, TurnoutState> {
@@ -280,6 +322,11 @@ export class MockResponseManager {
   reset(): void {
     this.powerState = PowerState.OFF;
     this.throttles.clear();
+    this.lights = new Map([
+      ['IL1', LightState.OFF],
+      ['IL2', LightState.OFF],
+      ['IL3', LightState.ON]
+    ]);
     this.turnouts = new Map([
       ['LT1', TurnoutState.CLOSED],
       ['LT2', TurnoutState.CLOSED],

@@ -1,5 +1,5 @@
 import { JmriClient } from '../../src/client';
-import { PowerState } from '../../src/types/jmri-messages';
+import { PowerState, LightState } from '../../src/types/jmri-messages';
 import { ConnectionState } from '../../src/types/events';
 
 // Mock WebSocket
@@ -111,6 +111,16 @@ describe('JmriClient', () => {
       (client as any).powerManager.emit('power:changed', PowerState.ON);
     });
 
+    it('should forward light:changed event', (done) => {
+      client.on('light:changed', (name, state) => {
+        expect(name).toBe('IL1');
+        expect(state).toBe(LightState.ON);
+        done();
+      });
+
+      (client as any).lightManager.emit('light:changed', 'IL1', LightState.ON);
+    });
+
     it('should forward throttle events', (done) => {
       client.on('throttle:acquired', (id) => {
         expect(id).toBe('CSX754');
@@ -154,6 +164,36 @@ describe('JmriClient', () => {
 
     it('should have searchRoster method', () => {
       expect(typeof client.searchRoster).toBe('function');
+    });
+  });
+
+  describe('light control methods', () => {
+    it('should have getLight method', () => {
+      expect(typeof client.getLight).toBe('function');
+    });
+
+    it('should have setLight method', () => {
+      expect(typeof client.setLight).toBe('function');
+    });
+
+    it('should have turnOnLight method', () => {
+      expect(typeof client.turnOnLight).toBe('function');
+    });
+
+    it('should have turnOffLight method', () => {
+      expect(typeof client.turnOffLight).toBe('function');
+    });
+
+    it('should have listLights method', () => {
+      expect(typeof client.listLights).toBe('function');
+    });
+
+    it('should have getLightState method', () => {
+      expect(typeof client.getLightState).toBe('function');
+    });
+
+    it('should have getCachedLights method', () => {
+      expect(typeof client.getCachedLights).toBe('function');
     });
   });
 

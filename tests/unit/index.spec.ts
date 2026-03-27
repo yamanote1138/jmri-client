@@ -1,4 +1,4 @@
-import { JmriClient, PowerState } from '../../src/index';
+import { JmriClient, PowerState, LightState } from '../../src/index';
 
 describe('Module exports', () => {
   it('should export JmriClient', () => {
@@ -13,12 +13,20 @@ describe('Module exports', () => {
     expect(PowerState.OFF).toBe(4);
   });
 
+  it('should export LightState', () => {
+    expect(LightState).toBeDefined();
+    expect(LightState.UNKNOWN).toBe(0);
+    expect(LightState.ON).toBe(2);
+    expect(LightState.OFF).toBe(4);
+  });
+
   it('should export type utilities', () => {
-    const { isThrottleFunctionKey, isValidSpeed, powerStateToString } = require('../../src/index');
+    const { isThrottleFunctionKey, isValidSpeed, powerStateToString, lightStateToString } = require('../../src/index');
 
     expect(typeof isThrottleFunctionKey).toBe('function');
     expect(typeof isValidSpeed).toBe('function');
     expect(typeof powerStateToString).toBe('function');
+    expect(typeof lightStateToString).toBe('function');
   });
 });
 

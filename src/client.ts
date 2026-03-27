@@ -8,8 +8,9 @@ import { PowerManager } from './managers/power-manager.js';
 import { RosterManager } from './managers/roster-manager.js';
 import { ThrottleManager } from './managers/throttle-manager.js';
 import { TurnoutManager } from './managers/turnout-manager.js';
+import { LightManager } from './managers/light-manager.js';
 import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
-import { PowerState, RosterEntryWrapper, TurnoutState, TurnoutData } from './types/jmri-messages.js';
+import { PowerState, RosterEntryWrapper, TurnoutState, TurnoutData, LightState, LightData } from './types/jmri-messages.js';
 import { ConnectionState } from './types/events.js';
 import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
@@ -24,6 +25,7 @@ export class JmriClient extends EventEmitter {
   private rosterManager: RosterManager;
   private throttleManager: ThrottleManager;
   private turnoutManager: TurnoutManager;
+  private lightManager: LightManager;
 
   /**
    * Create a new JMRI client
@@ -55,6 +57,7 @@ export class JmriClient extends EventEmitter {
     this.rosterManager = new RosterManager(this.wsClient);
     this.throttleManager = new ThrottleManager(this.wsClient);
     this.turnoutManager = new TurnoutManager(this.wsClient);
+    this.lightManager = new LightManager(this.wsClient);
 
     // Forward events from WebSocket client
     this.wsClient.on('connected', () => this.emit('connected'));
@@ -80,6 +83,9 @@ export class JmriClient extends EventEmitter {
     );
     this.turnoutManager.on('turnout:changed', (name: string, state: TurnoutState) =>
       this.emit('turnout:changed', name, state)
+    );
+    this.lightManager.on('light:changed', (name: string, state: LightState) =>
+      this.emit('light:changed', name, state)
     );
     this.throttleManager.on('throttle:acquired', (id: string) =>
       this.emit('throttle:acquired', id)
@@ -250,6 +256,59 @@ export class JmriClient extends EventEmitter {
    */
   getCachedTurnouts(): Map<string, TurnoutState> {
     return this.turnoutManager.getCachedTurnouts();
+  }
+
+  // ============================================================================
+  // Light Control
+  // ============================================================================
+
+  /**
+   * Get the current state of a light
+   */
+  async getLight(name: string): Promise<LightState> {
+    return this.lightManager.getLight(name);
+  }
+
+  /**
+   * Set a light to the given state
+   */
+  async setLight(name: string, state: LightState): Promise<void> {
+    return this.lightManager.setLight(name, state);
+  }
+
+  /**
+   * Turn a light on
+   */
+  async turnOnLight(name: string): Promise<void> {
+    return this.lightManager.turnOnLight(name);
+  }
+
+  /**
+   * Turn a light off
+   */
+  async turnOffLight(name: string): Promise<void> {
+    return this.lightManager.turnOffLight(name);
+  }
+
+  /**
+   * List all lights known to JMRI
+   */
+  async listLights(): Promise<LightData[]> {
+    return this.lightManager.listLights();
+  }
+
+  /**
+   * Get cached light state without a network request
+   */
+  getLightState(name: string): LightState | undefined {
+    return this.lightManager.getLightState(name);
+  }
+
+  /**
+   * Get all cached light states
+   */
+  getCachedLights(): Map<string, LightState> {
+    return this.lightManager.getCachedLights();
   }
 
   // ============================================================================

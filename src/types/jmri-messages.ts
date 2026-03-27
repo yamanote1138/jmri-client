@@ -226,6 +226,52 @@ export interface TurnoutMessage extends JmriMessage {
 }
 
 /**
+ * Light state values (from JMRI JSON protocol constants)
+ * UNKNOWN = 0 (state cannot be determined)
+ * ON = 2 (light is on)
+ * OFF = 4 (light is off)
+ */
+export enum LightState {
+  UNKNOWN = 0,
+  ON = 2,
+  OFF = 4
+}
+
+/**
+ * Convert LightState enum to human-readable string
+ */
+export function lightStateToString(state: LightState): string {
+  switch (state) {
+    case LightState.ON:
+      return 'ON';
+    case LightState.OFF:
+      return 'OFF';
+    case LightState.UNKNOWN:
+    default:
+      return 'UNKNOWN';
+  }
+}
+
+/**
+ * Light data structure
+ */
+export interface LightData {
+  name: string;
+  userName?: string;
+  comment?: string | null;
+  properties?: any[];
+  state?: LightState;
+}
+
+/**
+ * Light message
+ */
+export interface LightMessage extends JmriMessage {
+  type: 'light';
+  data?: LightData;
+}
+
+/**
  * Ping message (heartbeat)
  */
 export interface PingMessage extends JmriMessage {
@@ -284,6 +330,7 @@ export type AnyJmriMessage =
   | ThrottleMessage
   | RosterMessage
   | TurnoutMessage
+  | LightMessage
   | PingMessage
   | PongMessage
   | HelloMessage

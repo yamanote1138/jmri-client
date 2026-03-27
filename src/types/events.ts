@@ -2,7 +2,7 @@
  * Event types for JmriClient EventEmitter
  */
 
-import { PowerState, TurnoutState } from './jmri-messages.js';
+import { PowerState, TurnoutState, LightState } from './jmri-messages.js';
 import { ThrottleData } from './jmri-messages.js';
 
 /**
@@ -32,6 +32,9 @@ export interface EventPayloads {
 
   // Turnout events
   'turnout:changed': [name: string, state: TurnoutState];
+
+  // Light events
+  'light:changed': [name: string, state: LightState];
 
   // Throttle events
   'throttle:acquired': string; // throttle ID
