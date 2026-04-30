@@ -19,6 +19,7 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 - ✅ **Heartbeat monitoring** - Automatic ping/pong keepalive
 - ✅ **TypeScript** - Full type definitions included
 - ✅ **Dual module support** - ESM and CommonJS
+- ✅ **Multi-connection** - Target specific hardware connections by prefix when multiple are configured
 - ✅ **Extensible** - Subclass `JmriClient` to add support for additional JMRI object types
 
 ## Installation
@@ -105,6 +106,20 @@ client.on('reconnecting', (attempt, delay) => {
   console.log(`Reconnecting attempt ${attempt} in ${delay}ms`);
 });
 ```
+
+### Multi-Connection Support
+
+When JMRI has multiple hardware connections configured, use `getSystemConnections()` to discover their prefixes and pass them to power and throttle commands:
+
+```typescript
+const connections = await client.getSystemConnections();
+// [{ name: 'LocoNet', prefix: 'L' }, { name: 'DCC++', prefix: 'D' }]
+
+await client.powerOn('L');                             // LocoNet only
+const throttle = await client.acquireThrottle({ address: 3, prefix: 'L' });
+```
+
+When no prefix is supplied the command routes to JMRI's default connection manager, which is the correct behaviour for single-connection layouts.
 
 ### Extending JmriClient
 

@@ -283,6 +283,48 @@ async function runLayout() {
 runLayout();
 ```
 
+## Multi-Connection / Hardware Prefix
+
+When JMRI is configured with more than one hardware connection (e.g. both LocoNet and DCC++), use `getSystemConnections()` to discover the available prefixes, then pass them to power and throttle commands to target a specific connection.
+
+```typescript
+import { JmriClient } from 'jmri-client';
+
+const client = new JmriClient({ host: 'jmri.local' });
+
+client.on('connected', async () => {
+  // Discover what hardware connections JMRI has configured
+  const connections = await client.getSystemConnections();
+  console.log('Available connections:');
+  for (const conn of connections) {
+    console.log(`  ${conn.name} (prefix: "${conn.prefix}")`);
+  }
+  // Available connections:
+  //   LocoNet (prefix: "L")
+  //   DCC++ (prefix: "D")
+
+  // Power on via LocoNet only
+  await client.powerOn('L');
+
+  // Acquire a throttle on LocoNet
+  const throttle = await client.acquireThrottle({ address: 3, prefix: 'L' });
+  await client.setThrottleDirection(throttle, true);
+  await client.setThrottleSpeed(throttle, 0.3);
+
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
+  await client.setThrottleSpeed(throttle, 0);
+  await client.releaseThrottle(throttle);
+
+  // Power off via LocoNet only
+  await client.powerOff('L');
+
+  await client.disconnect();
+});
+```
+
+Single-connection layouts work exactly as before — just omit the prefix and JMRI routes to the default connection.
+
 ## CommonJS Usage
 
 ```javascript

@@ -65,6 +65,9 @@ client.on('heartbeat:timeout', () => { });
 // Get current power state
 const state: PowerState = await client.getPower();
 
+// Get power state for a specific hardware connection (see System Connections)
+const state: PowerState = await client.getPower('L');  // LocoNet prefix
+
 // PowerState enum values (from JMRI JSON protocol):
 // PowerState.UNKNOWN = 0  (state cannot be determined)
 // PowerState.ON = 2       (power is on)
@@ -83,16 +86,44 @@ switch (state) {
     break;
 }
 
-// Set power
+// Set power (all connections, or a specific one)
 await client.setPower(PowerState.ON);
-await client.powerOn();   // Convenience method
-await client.powerOff();  // Convenience method
+await client.setPower(PowerState.ON, 'L');  // LocoNet only
+
+// Convenience methods — all accept an optional prefix
+await client.powerOn();         // All connections
+await client.powerOn('L');      // LocoNet only
+await client.powerOff();        // All connections
+await client.powerOff('D');     // DCC++ only
 
 // Listen for power changes (including UNKNOWN states)
 client.on('power:changed', (state: PowerState) => {
   if (state === PowerState.UNKNOWN) {
     console.log('Power state became unknown (connection issue?)');
   }
+});
+```
+
+## System Connections
+
+Discover the hardware connections JMRI has configured and their short prefix strings. Use these prefixes to target power and throttle commands at a specific connection when multiple are active.
+
+```typescript
+// List all available system connections
+const connections: SystemConnectionData[] = await client.getSystemConnections();
+// [
+//   { name: 'LocoNet', prefix: 'L', userName: 'LocoNet' },
+//   { name: 'DCC++', prefix: 'D' }
+// ]
+
+// Use a prefix to target a specific connection
+const [loconet] = connections.filter(c => c.name === 'LocoNet');
+await client.powerOn(loconet.prefix);
+
+// Acquire a throttle on a specific connection
+const throttleId = await client.acquireThrottle({
+  address: 3,
+  prefix: loconet.prefix
 });
 ```
 
@@ -149,6 +180,9 @@ client.on('light:changed', (name: string, state: LightState) => {
 ```typescript
 // Acquire throttle
 const throttleId = await client.acquireThrottle({ address: 3 });
+
+// Acquire throttle on a specific hardware connection
+const throttleId = await client.acquireThrottle({ address: 3, prefix: 'L' });
 
 // Control speed (0.0 to 1.0)
 await client.setThrottleSpeed(throttleId, 0.0);   // Stopped
@@ -237,6 +271,7 @@ import {
   TurnoutData,
   ThrottleState,
   ThrottleFunctionKey,
-  ConnectionState
+  ConnectionState,
+  SystemConnectionData
 } from 'jmri-client';
 ```
