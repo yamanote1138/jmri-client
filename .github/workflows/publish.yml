@@ -31,7 +31,17 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Determine dist-tag
+        id: dist-tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" =~ -(alpha|beta|rc) ]]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to NPM
-        run: npm publish --provenance
+        run: npm publish --provenance --tag ${{ steps.dist-tag.outputs.tag }}
         env:
           NPM_CONFIG_PROVENANCE: true
