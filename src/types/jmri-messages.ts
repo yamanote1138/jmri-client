@@ -48,6 +48,7 @@ export function powerStateToString(state: PowerState): string {
  */
 export interface PowerData {
   state: PowerState;
+  prefix?: string;
 }
 
 /**
@@ -56,6 +57,23 @@ export interface PowerData {
 export interface PowerMessage extends JmriMessage {
   type: 'power';
   data?: PowerData;
+}
+
+/**
+ * System connection data (from JMRI systemConnections list)
+ */
+export interface SystemConnectionData {
+  name: string;
+  prefix: string;
+  userName?: string;
+}
+
+/**
+ * System connections message
+ */
+export interface SystemConnectionsMessage extends JmriMessage {
+  type: 'systemConnections';
+  data?: SystemConnectionData | SystemConnectionData[];
 }
 
 /**
@@ -68,6 +86,7 @@ export interface ThrottleData {
   forward?: boolean;
   release?: null;
   status?: string;
+  prefix?: string;
   // Function keys F0-F28
   F0?: boolean;
   F1?: boolean;
@@ -331,6 +350,7 @@ export type AnyJmriMessage =
   | RosterMessage
   | TurnoutMessage
   | LightMessage
+  | SystemConnectionsMessage
   | PingMessage
   | PongMessage
   | HelloMessage

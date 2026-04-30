@@ -27,10 +27,12 @@ export class PowerManager extends EventEmitter {
 
   /**
    * Get current track power state
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async getPower(): Promise<PowerState> {
+  async getPower(prefix?: string): Promise<PowerState> {
     const message: PowerMessage = {
-      type: 'power'
+      type: 'power',
+      ...(prefix !== undefined && { data: { state: PowerState.UNKNOWN, prefix } })
     };
 
     const response = await this.client.request<PowerMessage>(message);
@@ -44,12 +46,14 @@ export class PowerManager extends EventEmitter {
 
   /**
    * Set track power state
+   * @param state - The desired power state
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async setPower(state: PowerState): Promise<void> {
+  async setPower(state: PowerState, prefix?: string): Promise<void> {
     const message: PowerMessage = {
       type: 'power',
       method: 'post',
-      data: { state }
+      data: { state, ...(prefix !== undefined && { prefix }) }
     };
 
     await this.client.request<PowerMessage>(message);
@@ -64,16 +68,18 @@ export class PowerManager extends EventEmitter {
 
   /**
    * Turn track power on
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async powerOn(): Promise<void> {
-    await this.setPower(PowerState.ON);
+  async powerOn(prefix?: string): Promise<void> {
+    await this.setPower(PowerState.ON, prefix);
   }
 
   /**
    * Turn track power off
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async powerOff(): Promise<void> {
-    await this.setPower(PowerState.OFF);
+  async powerOff(prefix?: string): Promise<void> {
+    await this.setPower(PowerState.OFF, prefix);
   }
 
   /**

@@ -9,8 +9,9 @@ import { RosterManager } from './managers/roster-manager.js';
 import { ThrottleManager } from './managers/throttle-manager.js';
 import { TurnoutManager } from './managers/turnout-manager.js';
 import { LightManager } from './managers/light-manager.js';
+import { SystemConnectionsManager } from './managers/system-connections-manager.js';
 import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
-import { PowerState, RosterEntryWrapper, TurnoutState, TurnoutData, LightState, LightData } from './types/jmri-messages.js';
+import { PowerState, RosterEntryWrapper, TurnoutState, TurnoutData, LightState, LightData, SystemConnectionData } from './types/jmri-messages.js';
 import { ConnectionState } from './types/events.js';
 import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
@@ -26,6 +27,7 @@ export class JmriClient extends EventEmitter {
   private throttleManager: ThrottleManager;
   private turnoutManager: TurnoutManager;
   private lightManager: LightManager;
+  private systemConnectionsManager: SystemConnectionsManager;
 
   /**
    * Create a new JMRI client
@@ -58,6 +60,7 @@ export class JmriClient extends EventEmitter {
     this.throttleManager = new ThrottleManager(this.wsClient);
     this.turnoutManager = new TurnoutManager(this.wsClient);
     this.lightManager = new LightManager(this.wsClient);
+    this.systemConnectionsManager = new SystemConnectionsManager(this.wsClient);
 
     // Forward events from WebSocket client
     this.wsClient.on('connected', () => this.emit('connected'));
@@ -147,30 +150,55 @@ export class JmriClient extends EventEmitter {
 
   /**
    * Get current track power state
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async getPower(): Promise<PowerState> {
-    return this.powerManager.getPower();
+  async getPower(prefix?: string): Promise<PowerState> {
+    return this.powerManager.getPower(prefix);
   }
 
   /**
    * Set track power state
+   * @param state - The desired power state
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async setPower(state: PowerState): Promise<void> {
-    return this.powerManager.setPower(state);
+  async setPower(state: PowerState, prefix?: string): Promise<void> {
+    return this.powerManager.setPower(state, prefix);
   }
 
   /**
    * Turn track power on
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async powerOn(): Promise<void> {
-    return this.powerManager.powerOn();
+  async powerOn(prefix?: string): Promise<void> {
+    return this.powerManager.powerOn(prefix);
   }
 
   /**
    * Turn track power off
+   * @param prefix - Optional JMRI connection prefix to target a specific hardware connection
    */
-  async powerOff(): Promise<void> {
-    return this.powerManager.powerOff();
+  async powerOff(prefix?: string): Promise<void> {
+    return this.powerManager.powerOff(prefix);
+  }
+
+  // ============================================================================
+  // System Connections
+  // ============================================================================
+
+  /**
+   * List all available JMRI system connections and their prefixes.
+   * Use the returned prefix values with power and throttle commands to
+   * target a specific hardware connection when multiple are configured.
+   *
+   * @example
+   * ```typescript
+   * const connections = await client.getSystemConnections();
+   * // [{ name: 'LocoNet', prefix: 'L' }, { name: 'DCC++', prefix: 'D' }]
+   * await client.powerOn('L'); // power on via LocoNet only
+   * ```
+   */
+  async getSystemConnections(): Promise<SystemConnectionData[]> {
+    return this.systemConnectionsManager.getSystemConnections();
   }
 
   // ============================================================================

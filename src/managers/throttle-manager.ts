@@ -51,7 +51,8 @@ export class ThrottleManager extends EventEmitter {
       type: 'throttle',
       data: {
         name: throttleName,
-        address: options.address
+        address: options.address,
+        ...(options.prefix !== undefined && { prefix: options.prefix })
       }
     };
 

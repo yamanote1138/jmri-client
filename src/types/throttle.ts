@@ -15,6 +15,13 @@ export interface ThrottleAcquireOptions {
    * Whether this is a long address (default: true for addresses > 127)
    */
   isLongAddress?: boolean;
+
+  /**
+   * JMRI connection prefix to target a specific hardware connection.
+   * When omitted, routes to the default connection manager.
+   * Use getSystemConnections() to discover available prefixes.
+   */
+  prefix?: string;
 }
 
 /**
