@@ -12,7 +12,7 @@ import { MessageQueue } from './message-queue.js';
 import { ConnectionStateManager } from './connection-state-manager.js';
 import { HeartbeatManager } from './heartbeat-manager.js';
 import { ReconnectionManager } from './reconnection-manager.js';
-import { MockResponseManager } from '../mocks/index.js';
+import { MockResponseManager, loadMockConfig } from '../mocks/index.js';
 
 /**
  * Pending request tracking
@@ -40,6 +40,7 @@ export class WebSocketClient extends EventEmitter {
   private heartbeatManager: HeartbeatManager;
   private reconnectionManager: ReconnectionManager;
   private mockManager?: MockResponseManager;
+  private mockConnectionDelay?: number;
 
   // Request/response tracking
   private pendingRequests: Map<number, PendingRequest> = new Map();
@@ -59,12 +60,7 @@ export class WebSocketClient extends EventEmitter {
     this.heartbeatManager = new HeartbeatManager(options.heartbeat);
     this.reconnectionManager = new ReconnectionManager(options.reconnection);
 
-    // Initialize mock manager if mock mode is enabled
-    if (options.mock.enabled) {
-      this.mockManager = new MockResponseManager({
-        responseDelay: options.mock.responseDelay
-      });
-    }
+    // mockManager is initialized lazily in connectMock() to allow async config loading
 
     // Wire up state manager events
     this.stateManager.on('stateChanged', (newState: ConnectionState, prevState: ConnectionState) => {
@@ -111,7 +107,7 @@ export class WebSocketClient extends EventEmitter {
     this.stateManager.transition(ConnectionState.CONNECTING);
 
     // Mock mode - simulate connection
-    if (this.mockManager) {
+    if (this.options.mock.enabled) {
       return this.connectMock();
     }
 
@@ -162,14 +158,26 @@ export class WebSocketClient extends EventEmitter {
    * Simulate connection in mock mode
    */
   private async connectMock(): Promise<void> {
-    // Simulate connection delay
-    await this.delay(10);
+    // Lazy-initialize mock manager with loaded config (supports async YAML file loading)
+    if (!this.mockManager) {
+      const config = await loadMockConfig({
+        configPath: this.options.mock.configPath,
+        config: this.options.mock.config
+      });
+      // responseDelay: MockOptions.responseDelay is the backward-compat fallback;
+      // config.timing.responseDelay (from YAML or inline) takes precedence if set
+      if (this.options.mock.responseDelay !== undefined && config.timing?.responseDelay === undefined) {
+        config.timing = { ...config.timing, responseDelay: this.options.mock.responseDelay };
+      }
+      this.mockConnectionDelay = config.timing?.connectionDelay ?? 10;
+      this.mockManager = new MockResponseManager(config);
+    }
 
-    // Transition to connected state
+    await this.delay(this.mockConnectionDelay ?? 10);
+
     this.handleOpen();
 
-    // Send hello message in mock mode
-    const helloResponse = await this.mockManager!.getMockResponse({ type: 'hello' });
+    const helloResponse = await this.mockManager.getMockResponse({ type: 'hello' });
     if (helloResponse) {
       this.processMessage(helloResponse as AnyJmriMessage);
     }

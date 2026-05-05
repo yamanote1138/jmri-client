@@ -13,7 +13,9 @@ await esbuild.build({
   outfile: 'dist/browser/jmri-client.js',
   sourcemap: false,
   target: ['es2020'],
-  external: [] // Bundle all dependencies
+  // js-yaml and node:fs are only needed for YAML file loading (Node.js configPath option).
+  // They are not available in browsers; users pass `config` objects directly instead.
+  external: ['js-yaml', 'node:fs']
 });
 
 console.log('✓ Browser bundle created: dist/browser/jmri-client.js');

@@ -44,5 +44,5 @@ export { isThrottleFunctionKey, isValidSpeed } from './types/throttle.js';
 export { powerStateToString, turnoutStateToString, lightStateToString } from './types/jmri-messages.js';
 
 // Export mock system for testing and demo purposes
-export { MockResponseManager, mockResponseManager, mockData } from './mocks/index.js';
-export type { MockResponseManagerOptions } from './mocks/index.js';
+export { MockResponseManager, mockResponseManager, mockData, DEFAULT_MOCK_CONFIG, loadMockConfig } from './mocks/index.js';
+export type { MockConfig, MockServerConfig, MockRosterEntry, MockLightEntry, MockTurnoutEntry, MockFunctionKey, MockTimingConfig, MockConfigOptions } from './mocks/index.js';

@@ -1,3 +1,5 @@
+import type { MockConfig } from '../mocks/mock-config.js';
+
 /**
  * Client configuration options
  */
@@ -71,9 +73,24 @@ export interface MockOptions {
   /**
    * Delay in milliseconds before returning mock responses (default: 50)
    * Simulates network latency. Set to 0 for instant responses.
+   * If config.timing.responseDelay is also set, that value takes precedence.
    */
   responseDelay: number;
+
+  /**
+   * Path to a YAML configuration file for the mock environment (Node.js only).
+   * Defines the server info, roster, lights, turnouts, and timing.
+   * See examples/mock-config.example.yaml for the full schema.
+   */
+  configPath?: string;
+
+  /**
+   * Inline mock configuration object. Works in any environment (Node.js and browser).
+   * Merged over DEFAULT_MOCK_CONFIG — arrays replace entirely.
+   */
+  config?: MockConfig;
 }
+
 
 /**
  * JMRI client configuration options

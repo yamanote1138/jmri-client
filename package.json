@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.0.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^18.19.0",
     "@types/ws": "^8.5.10",
     "esbuild": "^0.27.3",
@@ -73,10 +74,12 @@
   },
   "dependencies": {
     "eventemitter3": "^5.0.4",
+    "js-yaml": "^4.1.1",
     "ws": "^8.16.0"
   },
   "files": [
     "dist",
-    "docs"
+    "docs",
+    "examples/mock-config.example.yaml"
   ]
 }

@@ -1,11 +1,11 @@
 # Mock Mode
 
-Mock mode allows you to test and demo the JMRI client without requiring a real JMRI server or hardware. All responses are generated from mock data, making it perfect for:
+Mock mode allows you to test and demo the JMRI client without requiring a real JMRI server or hardware. All responses are generated from configurable mock data, making it perfect for:
 
-- **Unit testing** - Consistent, predictable responses
-- **Demos** - No hardware setup required
-- **Development** - Test without running JMRI
-- **CI/CD** - Automated testing without external dependencies
+- **Unit testing** — Consistent, predictable responses
+- **Demos** — No hardware setup required
+- **Development** — Test without running JMRI
+- **CI/CD** — Automated testing without external dependencies
 
 ## Quick Start
 
@@ -15,10 +15,7 @@ Enable mock mode by passing `mock: { enabled: true }` in the client options:
 import { JmriClient } from 'jmri-client';
 
 const client = new JmriClient({
-  mock: {
-    enabled: true,        // Enable mock mode
-    responseDelay: 50     // Optional: simulate network latency (ms)
-  }
+  mock: { enabled: true }
 });
 
 await client.connect();
@@ -28,204 +25,240 @@ const roster = await client.getRoster();
 console.log(roster); // Returns mock roster data
 ```
 
+This uses the built-in default layout: three locomotives, three lights, three turnouts. All configurable.
+
 ## Configuration Options
 
 ### `mock.enabled`
 - **Type:** `boolean`
 - **Default:** `false`
-- **Description:** Enable or disable mock mode
+- Enable or disable mock mode.
 
 ### `mock.responseDelay`
 - **Type:** `number` (milliseconds)
 - **Default:** `50`
-- **Description:** Simulated network latency. Set to `0` for instant responses.
+- Simulated network latency. Set to `0` for instant responses. Overridden by `config.timing.responseDelay` if set.
 
-## Mock Data
+### `mock.configPath` *(Node.js only)*
+- **Type:** `string`
+- Path to a YAML configuration file. Defines the server identity, roster, lights, turnouts, and timing. See the [YAML Config](#yaml-config) section below.
 
-All mock responses are defined in `src/mocks/mock-data.ts`. The mock data includes:
+### `mock.config`
+- **Type:** `MockConfig` object
+- Inline configuration. Works in any environment (Node.js and browsers). Merged over `DEFAULT_MOCK_CONFIG` — arrays replace entirely, scalar/object fields deep-merge.
 
-### Hello Response
-Connection establishment response with JMRI version info:
-```json
-{
-  "type": "hello",
-  "data": {
-    "JMRI": "5.9.2",
-    "json": "5.0",
-    "version": "v5",
-    "heartbeat": 13500,
-    "railroad": "Demo Railroad",
-    "node": "jmri-server",
-    "activeProfile": "Demo Profile"
-  }
-}
-```
+## How It Works
 
-### Power Responses
-Track power ON/OFF states
+When `connect()` is called in mock mode:
 
-### Roster
-Three sample locomotives:
-- **CSX754** - GP38-2 diesel locomotive
-- **UP3985** - Challenger 4-6-6-4 steam locomotive
-- **BNSF5240** - SD40-2 diesel locomotive
+1. **Config is loaded** — from the YAML file, inline object, or built-in defaults
+2. **`MockResponseManager` is created** — initialized with the loaded config; builds in-memory state for lights, turnouts, and power
+3. **Connection is simulated** — after a configurable delay (`timing.connectionDelay`), the client transitions to CONNECTED
+4. **Hello handshake fires** — a synthetic hello message is routed through the normal message pipeline so `JmriClient` emits the `connected` event with server info from the config
 
-Each includes realistic function key mappings (F0-F4).
+From that point, every `request()` call bypasses the WebSocket entirely and routes to `MockResponseManager.getMockResponse()`. The response is piped through the same `processMessage()` path as real WebSocket messages, so all event emitters behave identically to real mode.
 
-### Lights
-Three sample lights:
-- **IL1** - Yard Light (OFF)
-- **IL2** - Platform Light (OFF)
-- **IL3** - Signal Lamp (ON)
+**State is maintained in memory.** Turning a light on, throwing a turnout, acquiring a throttle — all persist within the `MockResponseManager` instance for the lifetime of the connection. `reset()` restores everything to config values.
 
-### Turnouts
-Three sample turnouts:
-- **LT1** - Main Diverge (CLOSED)
-- **LT2** - Yard Lead (CLOSED)
-- **LT3** - Siding Entry (THROWN)
+## YAML Config
 
-### Throttle Responses
-Supports all throttle operations:
-- Acquire/release
-- Speed control (0.0 - 1.0)
-- Direction (forward/reverse)
-- Function keys (F0-F28)
-
-### Heartbeat
-Responds to ping messages with pong
-
-## Example: Complete Demo
-
-See `examples/mock-demo.mjs` for a complete working example.
+Copy `examples/mock-config.example.yaml` from the package, edit it to match your layout, and pass the path:
 
 ```javascript
-import { JmriClient } from 'jmri-client';
-
-async function demo() {
-  // Create client with mock mode
-  const client = new JmriClient({
-    mock: { enabled: true, responseDelay: 100 },
-    autoConnect: true
-  });
-
-  // Wait for connection
-  await new Promise((resolve) => client.on('connected', resolve));
-
-  // Get roster
-  const roster = await client.getRoster();
-  console.log(`Found ${roster.length} locomotives`);
-
-  // Turn power on
-  await client.powerOn();
-  const power = await client.getPower();
-  console.log(`Power: ${power === 2 ? 'ON' : 'OFF'}`);
-
-  // Acquire throttle
-  const throttleId = await client.acquireThrottle({ address: 754 });
-
-  // Control locomotive
-  await client.setThrottleSpeed(throttleId, 0.5);
-  await client.setThrottleDirection(throttleId, true);
-  await client.setThrottleFunction(throttleId, 'F0', true);
-
-  // Release throttle
-  await client.releaseThrottle(throttleId);
-
-  // Disconnect
-  await client.disconnect();
-}
+const client = new JmriClient({
+  mock: {
+    enabled: true,
+    configPath: './my-layout.yaml'
+  }
+});
 ```
 
-Run the demo:
-```bash
-npm run demo:mock
+### Full schema
+
+```yaml
+# Server identity — returned in the initial hello handshake
+server:
+  jmri: "5.9.2"
+  json: "5.0"
+  heartbeat: 13500
+  railroad: "My Model Railroad"
+  node: "jmri-server"
+  activeProfile: "Main"
+
+# Power state on startup: ON | OFF | UNKNOWN
+power:
+  initialState: OFF
+
+# Locomotive roster
+roster:
+  - name: "CSX754"
+    address: "754"
+    isLongAddress: true
+    road: "CSX"
+    number: "754"
+    mfg: "Athearn"
+    decoderModel: "DH163D"
+    decoderFamily: "Digitrax DH163"
+    model: "GP38-2"
+    comment: "Blue and yellow scheme"
+    maxSpeedPct: 100
+    functionKeys:
+      - name: F0
+        label: "Headlight"
+        lockable: true
+      - name: F2
+        label: "Horn"
+        lockable: false
+
+# Lights — state: ON | OFF | UNKNOWN
+lights:
+  - name: IL1
+    userName: "Yard Light"
+    state: OFF
+  - name: IL3
+    userName: "Signal Lamp"
+    state: ON
+
+# Turnouts — state: CLOSED | THROWN | UNKNOWN
+turnouts:
+  - name: LT1
+    userName: "Main Diverge"
+    state: CLOSED
+  - name: LT3
+    userName: "Siding Entry"
+    state: THROWN
+
+# Timing
+timing:
+  responseDelay: 50    # ms — simulates JMRI server latency
+  connectionDelay: 10  # ms — simulates TCP handshake
 ```
 
-## Using Mock Data in Tests
+All fields are optional. Omitted fields fall back to `DEFAULT_MOCK_CONFIG` values.
 
-The mock data is shared between the mock system and unit tests, ensuring consistency.
+**Note:** Arrays (`roster`, `lights`, `turnouts`) replace the defaults entirely — they are not merged. If you define two lights in your config, only those two lights exist in the mock.
+
+## Inline Config
+
+For environments where file I/O isn't available (browsers, tests), pass a config object directly:
+
+```javascript
+const client = new JmriClient({
+  mock: {
+    enabled: true,
+    config: {
+      server: { railroad: 'Test Layout' },
+      lights: [
+        { name: 'IL1', userName: 'Platform', state: 'ON' }
+      ],
+      roster: [
+        { name: 'LOCO1', address: '1234', model: 'GP9' }
+      ]
+    }
+  }
+});
+```
+
+## Default Layout
+
+When no config is provided, the mock uses `DEFAULT_MOCK_CONFIG`, which is exported for reference:
+
+```javascript
+import { DEFAULT_MOCK_CONFIG } from 'jmri-client';
+```
+
+**Roster:** CSX754 (GP38-2), UP3985 (Challenger 4-6-6-4), BNSF5240 (SD40-2)
+
+**Lights:**
+| Name | User Name | Initial State |
+|------|-----------|---------------|
+| IL1 | Yard Light | OFF |
+| IL2 | Platform Light | OFF |
+| IL3 | Signal Lamp | ON |
+
+**Turnouts:**
+| Name | User Name | Initial State |
+|------|-----------|---------------|
+| LT1 | Main Diverge | CLOSED |
+| LT2 | Yard Lead | CLOSED |
+| LT3 | Siding Entry | THROWN |
+
+## Using MockResponseManager Directly
+
+For unit tests that need direct access to the manager:
 
 ```typescript
-import { mockData, MockResponseManager } from 'jmri-client';
+import { MockResponseManager, DEFAULT_MOCK_CONFIG } from 'jmri-client';
 
-// Access mock data directly (array of roster entry wrappers)
-const rosterData = mockData.roster.list;
+// Default layout, zero delay
+const manager = new MockResponseManager();
 
-// Or use the response manager
-const mockManager = new MockResponseManager();
-const response = await mockManager.getMockResponse({
-  type: 'roster',
-  method: 'list'
+// Custom layout
+const manager = new MockResponseManager({
+  ...DEFAULT_MOCK_CONFIG,
+  lights: [{ name: 'IL99', userName: 'Test Light', state: 'ON' }],
+  timing: { responseDelay: 0 }
 });
+
+const response = await manager.getMockResponse({ type: 'roster', method: 'list' });
+
+// Reset state back to config values
+manager.reset();
+```
+
+A shared singleton with zero delay is also available:
+
+```typescript
+import { mockResponseManager } from 'jmri-client';
 ```
 
 ## Stateful Behavior
 
 The mock system maintains state for realistic behavior:
 
-- **Power state** - Remembers if power is ON or OFF
-- **Light states** - Tracks ON/OFF state per light
-- **Turnout states** - Tracks CLOSED/THROWN state per turnout
-- **Throttles** - Tracks acquired throttles and their states
-- **Speed/Direction** - Maintains current speed and direction per throttle
-- **Functions** - Tracks function key states (F0-F28)
-
-State is maintained within each `MockResponseManager` instance.
+- **Power** — Remembers ON/OFF state; persists across calls
+- **Lights** — Tracks ON/OFF state per light; updated by `setLight()`
+- **Turnouts** — Tracks CLOSED/THROWN per turnout; updated by `setTurnout()`
+- **Throttles** — Tracks acquired throttles with speed, direction, and F0–F28 states
+- **Reset** — `manager.reset()` restores everything to the values defined in the config
 
 ## Testing with Mock Mode
-
-To run unit tests that use mock mode:
 
 ```bash
 npm test
 ```
 
-All unit tests run in-memory without requiring WebSocket connections or JMRI servers.
+All unit tests run in-memory without WebSocket connections or a JMRI server.
 
-## Customizing Mock Data
-
-To customize mock responses:
-
-1. Edit `src/mocks/mock-data.ts`
-2. Rebuild: `npm run build`
-3. Test your changes: `npm run demo:mock`
-
-The mock data structure follows the JMRI JSON protocol specification.
-
-## Comparison: Mock Mode vs Real Mode
+## Comparison: Mock vs Real
 
 | Feature | Mock Mode | Real Mode |
 |---------|-----------|-----------|
-| JMRI server required | ❌ No | ✅ Yes |
-| Hardware required | ❌ No | ✅ Yes |
+| JMRI server required | No | Yes |
+| Hardware required | No | Yes |
 | Network latency | Simulated | Real |
-| Consistent responses | ✅ Yes | Varies |
+| Consistent responses | Yes | Varies |
 | State persistence | In-memory | JMRI server |
-| Best for | Testing, demos, CI/CD | Production use |
+| Configurable layout | Yes (YAML or object) | JMRI config |
+| Best for | Testing, demos, CI/CD | Production |
 
 ## API Compatibility
 
 Mock mode implements the full JMRI client API. All methods work identically:
 
-- ✅ `connect()` / `disconnect()`
-- ✅ `getPower()` / `powerOn()` / `powerOff()`
-- ✅ `getRoster()`
-- ✅ `getLight()` / `setLight()` / `turnOnLight()` / `turnOffLight()` / `listLights()`
-- ✅ `getTurnout()` / `setTurnout()` / `throwTurnout()` / `closeTurnout()` / `listTurnouts()`
-- ✅ `acquireThrottle()` / `releaseThrottle()`
-- ✅ `setThrottleSpeed()`
-- ✅ `setThrottleDirection()`
-- ✅ `setThrottleFunction()`
-- ✅ All event emitters
+- `connect()` / `disconnect()`
+- `getPower()` / `powerOn()` / `powerOff()`
+- `getRoster()`
+- `getLight()` / `setLight()` / `turnOnLight()` / `turnOffLight()` / `listLights()`
+- `getTurnout()` / `setTurnout()` / `throwTurnout()` / `closeTurnout()` / `listTurnouts()`
+- `acquireThrottle()` / `releaseThrottle()`
+- `setThrottleSpeed()` / `setThrottleDirection()` / `setThrottleFunction()`
+- All event emitters
 
 ## Limitations
 
-Mock mode is designed for testing and demonstration. Be aware:
-
 - No real locomotives are controlled
-- State is not persisted between client instances
+- State resets when the client instance is discarded
 - No actual JMRI server validation
 - Simulated latency only (no real network variability)
-- Limited error scenarios in mock data
-
-For production use with real hardware, disable mock mode (default).
+- `configPath` requires Node.js — pass `config` objects in browser environments

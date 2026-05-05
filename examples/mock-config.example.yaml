@@ -1,0 +1,127 @@
+# JMRI Mock Server Configuration
+#
+# Copy this file, customize it for your layout, then pass the path to JmriClient:
+#
+#   import { JmriClient } from 'jmri-client';
+#   const client = new JmriClient({ mock: { enabled: true, configPath: './my-layout.yaml' } });
+#
+# You can also pass config inline (works in browsers too):
+#
+#   const client = new JmriClient({
+#     mock: { enabled: true, config: { server: { railroad: 'My Layout' }, ... } }
+#   });
+#
+# All fields are optional. Omitted fields fall back to DEFAULT_MOCK_CONFIG values.
+
+# ----------------------------------------------------------------------------
+# Server identity — returned in the initial hello handshake
+# ----------------------------------------------------------------------------
+server:
+  jmri: "5.9.2"            # JMRI software version
+  json: "5.0"              # JSON API version
+  heartbeat: 13500         # Heartbeat interval in ms
+  railroad: "My Model Railroad"
+  node: "jmri-server"
+  activeProfile: "Main"
+
+# ----------------------------------------------------------------------------
+# Power state on startup
+# Values: ON | OFF | UNKNOWN
+# ----------------------------------------------------------------------------
+power:
+  initialState: OFF
+
+# ----------------------------------------------------------------------------
+# Locomotive roster
+# Each entry mirrors a JMRI RosterEntry. functionKeys are optional.
+# ----------------------------------------------------------------------------
+roster:
+  - name: "CSX754"
+    address: "754"
+    isLongAddress: true
+    road: "CSX"
+    number: "754"
+    mfg: "Athearn"
+    decoderModel: "DH163D"
+    decoderFamily: "Digitrax DH163"
+    model: "GP38-2"
+    comment: "Blue and yellow scheme"
+    maxSpeedPct: 100
+    functionKeys:
+      - name: F0
+        label: "Headlight"
+        lockable: true
+      - name: F1
+        label: "Bell"
+        lockable: true
+      - name: F2
+        label: "Horn"
+        lockable: false
+      - name: F3
+        label: null
+        lockable: false
+      - name: F4
+        label: "Dynamic Brake"
+        lockable: true
+
+  - name: "UP3985"
+    address: "3985"
+    isLongAddress: true
+    road: "Union Pacific"
+    number: "3985"
+    mfg: "Rivarossi"
+    decoderModel: "Sound decoder"
+    decoderFamily: "ESU LokSound"
+    model: "Challenger 4-6-6-4"
+    comment: "Steam locomotive"
+    maxSpeedPct: 100
+    functionKeys:
+      - name: F0
+        label: "Headlight"
+        lockable: true
+      - name: F1
+        label: "Bell"
+        lockable: true
+      - name: F2
+        label: "Whistle"
+        lockable: false
+      - name: F3
+        label: "Steam"
+        lockable: true
+
+# ----------------------------------------------------------------------------
+# Lights
+# state values: ON | OFF | UNKNOWN
+# ----------------------------------------------------------------------------
+lights:
+  - name: IL1
+    userName: "Yard Light"
+    state: OFF
+  - name: IL2
+    userName: "Platform Light"
+    state: OFF
+  - name: IL3
+    userName: "Signal Lamp"
+    state: ON
+
+# ----------------------------------------------------------------------------
+# Turnouts
+# state values: CLOSED | THROWN | UNKNOWN
+# ----------------------------------------------------------------------------
+turnouts:
+  - name: LT1
+    userName: "Main Diverge"
+    state: CLOSED
+  - name: LT2
+    userName: "Yard Lead"
+    state: CLOSED
+  - name: LT3
+    userName: "Siding Entry"
+    state: THROWN
+
+# ----------------------------------------------------------------------------
+# Timing
+# ----------------------------------------------------------------------------
+timing:
+  responseDelay: 50     # ms — simulates JMRI server response latency
+  connectionDelay: 10   # ms — simulates TCP handshake on connect()
