@@ -2,7 +2,7 @@
   "preset": "ts-jest",
   "testEnvironment": "node",
   "transform": {
-    "^.+\\.ts?$": "ts-jest"
+    "^.+\\.ts?$": ["ts-jest", { "tsconfig": "tsconfig.test.json" }]
   },
   "transformIgnorePatterns": ["<rootDir>/node_modules/"],
   "moduleNameMapper": {

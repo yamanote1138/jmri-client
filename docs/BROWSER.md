@@ -1,6 +1,6 @@
 # Browser Usage Guide
 
-jmri-client v3.2.0+ supports both Node.js and browser environments. This guide shows how to use jmri-client in web applications.
+jmri-client supports both Node.js and browser environments. This guide shows how to use jmri-client in web applications.
 
 ## Installation
 
@@ -112,7 +112,7 @@ For quick prototypes without a build step, use the browser bundle:
 
   <script type="module">
     // Use the browser bundle from CDN
-    import { JmriClient } from 'https://unpkg.com/jmri-client@3.3.0/dist/browser/jmri-client.js';
+    import { JmriClient } from 'https://unpkg.com/jmri-client@5.0.0/dist/browser/jmri-client.js';
 
     const client = new JmriClient({
       host: 'localhost',
@@ -144,8 +144,8 @@ For quick prototypes without a build step, use the browser bundle:
 ```
 
 Alternative CDNs:
-- **unpkg**: `https://unpkg.com/jmri-client@3.3.0/dist/browser/jmri-client.js`
-- **jsDelivr**: `https://cdn.jsdelivr.net/npm/jmri-client@3.3.0/dist/browser/jmri-client.js`
+- **unpkg**: `https://unpkg.com/jmri-client@5.0.0/dist/browser/jmri-client.js`
+- **jsDelivr**: `https://cdn.jsdelivr.net/npm/jmri-client@5.0.0/dist/browser/jmri-client.js`
 
 ## React Example
 

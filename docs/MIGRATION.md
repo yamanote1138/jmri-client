@@ -1,4 +1,33 @@
-# Migration Guide: v2.x to v3.x
+# Migration Guide
+
+## v4.x to v5.0
+
+### Breaking Changes
+
+#### Node.js version requirement
+
+**v4.x:** Node.js 18+
+**v5.0:** Node.js 22+
+
+Node 18 reached end-of-life in April 2025 and Node 20 in April 2026. v5.0 requires Node 22 (Active LTS, EOL April 2027) or later.
+
+```bash
+node --version  # Should be >= 22.0.0
+```
+
+#### No API changes
+
+There are no API-level breaking changes between v4.x and v5.0. All existing code targeting v4.x will work without modification.
+
+### What's new in v5.0
+
+- Node.js 22+ required (drops EOL Node 18 and 20)
+- Built with TypeScript 6
+- esbuild-based build pipeline — faster, smaller outputs, no more dual `tsc` compilation
+
+---
+
+## v2.x to v3.x
 
 ## Overview
 

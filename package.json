@@ -1,6 +1,6 @@
 {
   "name": "jmri-client",
-  "version": "4.2.0-beta.2",
+  "version": "5.0.0",
   "description": "WebSocket client for JMRI with real-time updates and throttle control - works in both Node.js and browsers",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -8,19 +8,18 @@
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "browser": "./dist/browser/jmri-client.js",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/cjs/index.js"
     }
   },
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "npm run build:cjs && npm run build:esm && npm run build:types && npm run build:browser",
-    "build:cjs": "tsc -p tsconfig.json",
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:types": "tsc -p tsconfig.json --declaration --emitDeclarationOnly --outDir dist/types",
-    "build:browser": "node build-browser.mjs",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && node build.mjs && npm run build:types",
+    "build:types": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest --no-cache --coverage",
     "test:browser": "node ./tests/integration/serve-test.mjs",
     "test:reconnect": "node ./tests/integration/forced-reconnect.mjs",
@@ -59,21 +58,21 @@
     "url": "https://github.com/yamanote1138/jmri-client/issues"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "devDependencies": {
-    "@types/jest": "^29.0.3",
-    "@types/node": "^18.19.0",
-    "@types/ws": "^8.5.10",
-    "esbuild": "^0.27.3",
-    "jest": "^29.0.3",
-    "playwright": "^1.58.2",
-    "ts-jest": "^29.4.6",
-    "typescript": "^5.3.3"
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.0",
+    "esbuild": "^0.28.0",
+    "jest": "^30.0.0",
+    "playwright": "^1.60.0",
+    "ts-jest": "^29.4.11",
+    "typescript": "^6.0.0"
   },
   "dependencies": {
     "eventemitter3": "^5.0.4",
-    "ws": "^8.16.0"
+    "ws": "^8.21.0"
   },
   "files": [
     "dist",
