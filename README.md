@@ -28,7 +28,9 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 npm install jmri-client
 ```
 
-**Requirements:** Node.js 18+
+**Requirements:** Node.js 18+ · JMRI 5.0 or later
+
+> `getSystemConnections()` and per-connection power/throttle prefix support require JMRI 5.15.7+. All other features work with any JMRI 5.x release.
 
 ## Quick Start
 
