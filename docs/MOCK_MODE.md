@@ -65,12 +65,17 @@ Connection establishment response with JMRI version info:
 Track power ON/OFF states
 
 ### Roster
-Three sample locomotives:
-- **CSX754** - GP38-2 diesel locomotive
-- **UP3985** - Challenger 4-6-6-4 steam locomotive
-- **BNSF5240** - SD40-2 diesel locomotive
+Three sample locomotives across two groups:
+- **CSX754** - GP38-2 diesel locomotive (`diesels` group)
+- **UP3985** - Challenger 4-6-6-4 steam locomotive (`steam` group)
+- **BNSF5240** - SD40-2 diesel locomotive (`diesels` group)
 
 Each includes realistic function key mappings (F0-F4).
+
+### Roster Groups
+Two sample groups:
+- **diesels** - CSX754, BNSF5240 (length: 2)
+- **steam** - UP3985 (length: 1)
 
 ### Lights
 Three sample lights:
@@ -163,10 +168,10 @@ const response = await mockManager.getMockResponse({
 
 The mock system maintains state for realistic behavior:
 
-- **Power state** - Remembers if power is ON or OFF
+- **Power state** - Remembers if power is ON or OFF; tracked independently per connection prefix when one is supplied
 - **Light states** - Tracks ON/OFF state per light
 - **Turnout states** - Tracks CLOSED/THROWN state per turnout
-- **Throttles** - Tracks acquired throttles and their states
+- **Throttles** - Tracks acquired throttles and their states, including connection prefix
 - **Speed/Direction** - Maintains current speed and direction per throttle
 - **Functions** - Tracks function key states (F0-F28)
 
@@ -208,11 +213,12 @@ The mock data structure follows the JMRI JSON protocol specification.
 Mock mode implements the full JMRI client API. All methods work identically:
 
 - ✅ `connect()` / `disconnect()`
-- ✅ `getPower()` / `powerOn()` / `powerOff()`
-- ✅ `getRoster()`
+- ✅ `getPower()` / `powerOn()` / `powerOff()` (with optional prefix)
+- ✅ `getRoster()` / `getRosterEntryByName()` / `getRosterEntryByAddress()` / `searchRoster()`
+- ✅ `getRosterGroups()` / `getRosterEntriesByGroup()`
 - ✅ `getLight()` / `setLight()` / `turnOnLight()` / `turnOffLight()` / `listLights()`
 - ✅ `getTurnout()` / `setTurnout()` / `throwTurnout()` / `closeTurnout()` / `listTurnouts()`
-- ✅ `acquireThrottle()` / `releaseThrottle()`
+- ✅ `acquireThrottle()` / `releaseThrottle()` (with optional prefix)
 - ✅ `setThrottleSpeed()`
 - ✅ `setThrottleDirection()`
 - ✅ `setThrottleFunction()`

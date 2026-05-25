@@ -69,8 +69,8 @@ export const mockData = {
             { "name": "F4", "label": "Dynamic Brake", "lockable": true, "icon": null, "selectedIcon": null },
             { "name": "F5", "label": null, "lockable": false, "icon": null, "selectedIcon": null }
           ],
-          "attributes": [],
-          "rosterGroups": []
+          "attributes": [{ "name": "RosterGroup:diesels", "value": "yes" }],
+          "rosterGroups": ["diesels"]
         },
         "id": 1
       },
@@ -100,8 +100,8 @@ export const mockData = {
             { "name": "F3", "label": "Steam", "lockable": true, "icon": null, "selectedIcon": null },
             { "name": "F4", "label": null, "lockable": false, "icon": null, "selectedIcon": null }
           ],
-          "attributes": [],
-          "rosterGroups": []
+          "attributes": [{ "name": "RosterGroup:steam", "value": "yes" }],
+          "rosterGroups": ["steam"]
         },
         "id": 2
       },
@@ -132,11 +132,17 @@ export const mockData = {
             { "name": "F4", "label": null, "lockable": false, "icon": null, "selectedIcon": null },
             { "name": "F5", "label": "Mars Light", "lockable": true, "icon": null, "selectedIcon": null }
           ],
-          "attributes": [],
-          "rosterGroups": []
+          "attributes": [{ "name": "RosterGroup:diesels", "value": "yes" }],
+          "rosterGroups": ["diesels"]
         },
         "id": 3
       }
+    ]
+  },
+  "rosterGroup": {
+    "list": [
+      { "type": "rosterGroup", "data": { "name": "diesels", "length": 2 } },
+      { "type": "rosterGroup", "data": { "name": "steam", "length": 1 } }
     ]
   },
   "throttle": {

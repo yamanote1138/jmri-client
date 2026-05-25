@@ -11,7 +11,7 @@ import { TurnoutManager } from './managers/turnout-manager.js';
 import { LightManager } from './managers/light-manager.js';
 import { SystemConnectionsManager } from './managers/system-connections-manager.js';
 import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
-import { PowerState, RosterEntryWrapper, TurnoutState, TurnoutData, LightState, LightData, SystemConnectionData } from './types/jmri-messages.js';
+import { PowerState, RosterEntryWrapper, RosterGroup, TurnoutState, TurnoutData, LightState, LightData, SystemConnectionData } from './types/jmri-messages.js';
 import { ConnectionState } from './types/events.js';
 import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
@@ -231,6 +231,20 @@ export class JmriClient extends EventEmitter {
    */
   async searchRoster(query: string): Promise<RosterEntryWrapper[]> {
     return this.rosterManager.searchRoster(query);
+  }
+
+  /**
+   * Get all roster groups
+   */
+  async getRosterGroups(): Promise<RosterGroup[]> {
+    return this.rosterManager.getRosterGroups();
+  }
+
+  /**
+   * Get roster entries belonging to a specific group
+   */
+  async getRosterEntriesByGroup(group: string): Promise<RosterEntryWrapper[]> {
+    return this.rosterManager.getRosterEntriesByGroup(group);
   }
 
   // ============================================================================

@@ -25,6 +25,7 @@ export interface MockResponseManagerOptions {
 export class MockResponseManager {
   private responseDelay: number;
   private powerState: PowerState;
+  private powerStateByPrefix: Map<string, PowerState> = new Map();
   private throttles: Map<string, any> = new Map();
   private lights: Map<string, LightState> = new Map([
     ['IL1', LightState.OFF],
@@ -62,6 +63,9 @@ export class MockResponseManager {
       case 'roster':
         return this.getRosterResponse(message);
 
+      case 'rosterGroup':
+        return this.getRosterGroupResponse();
+
       case 'throttle':
         return this.getThrottleResponse(message);
 
@@ -90,39 +94,56 @@ export class MockResponseManager {
   }
 
   /**
-   * Get power response
+   * Get power response, with optional per-prefix state tracking
    */
   private getPowerResponse(message: JmriMessage): PowerMessage {
+    const prefix = message.data?.prefix as string | undefined;
+
     // Handle power state change
-    if (message.data?.state !== undefined) {
+    if (message.method === 'post' && message.data?.state !== undefined) {
+      if (prefix !== undefined) {
+        this.powerStateByPrefix.set(prefix, message.data.state);
+        return { type: 'power', data: { state: message.data.state, prefix } };
+      }
       this.powerState = message.data.state;
-      return {
-        type: 'power',
-        data: { state: this.powerState }
-      };
+      return { type: 'power', data: { state: this.powerState } };
     }
 
-    // Return current power state
-    return {
-      type: 'power',
-      data: { state: this.powerState }
-    };
+    // Return current power state for the requested prefix
+    if (prefix !== undefined) {
+      const state = this.powerStateByPrefix.get(prefix) ?? PowerState.UNKNOWN;
+      return { type: 'power', data: { state, prefix } };
+    }
+
+    return { type: 'power', data: { state: this.powerState } };
   }
 
   /**
-   * Get roster response
+   * Get roster response, optionally filtered by group
    */
   private getRosterResponse(message: JmriMessage): JmriMessage {
     if (message.type === 'roster' && message.method === 'list') {
-      return {
-        type: 'roster',
-        data: JSON.parse(JSON.stringify(mockData.roster.list))
-      };
+      const all = JSON.parse(JSON.stringify(mockData.roster.list));
+      const group = message.params?.group;
+      if (group) {
+        return {
+          type: 'roster',
+          data: all.filter((e: any) => e.data.rosterGroups?.includes(group))
+        };
+      }
+      return { type: 'roster', data: all };
     }
 
+    return { type: 'roster', data: [] };
+  }
+
+  /**
+   * Get roster group response
+   */
+  private getRosterGroupResponse(): JmriMessage {
     return {
-      type: 'roster',
-      data: []
+      type: 'rosterGroup',
+      data: JSON.parse(JSON.stringify(mockData.rosterGroup.list))
     };
   }
 
@@ -135,7 +156,7 @@ export class MockResponseManager {
     // Acquire throttle
     if (data.address !== undefined && !data.throttle) {
       const throttleId = data.name || `MOCK-${data.address}`;
-      const throttleState = {
+      const throttleState: any = {
         throttle: throttleId,
         address: data.address,
         speed: 0,
@@ -144,15 +165,13 @@ export class MockResponseManager {
         F1: false,
         F2: false,
         F3: false,
-        F4: false
+        F4: false,
+        ...(data.prefix !== undefined && { prefix: data.prefix })
       };
 
       this.throttles.set(throttleId, throttleState);
 
-      return {
-        type: 'throttle',
-        data: { ...throttleState }
-      };
+      return { type: 'throttle', data: { ...throttleState } };
     }
 
     // Release throttle
@@ -321,6 +340,7 @@ export class MockResponseManager {
    */
   reset(): void {
     this.powerState = PowerState.OFF;
+    this.powerStateByPrefix.clear();
     this.throttles.clear();
     this.lights = new Map([
       ['IL1', LightState.OFF],

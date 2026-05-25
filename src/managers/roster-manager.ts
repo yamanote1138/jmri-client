@@ -3,7 +3,7 @@
  */
 
 import { WebSocketClient } from '../core/websocket-client.js';
-import { RosterMessage, RosterData, RosterResponse, RosterEntryWrapper } from '../types/jmri-messages.js';
+import { RosterMessage, RosterData, RosterResponse, RosterEntryWrapper, RosterGroup, RosterGroupMessage, RosterMessageWithParams } from '../types/jmri-messages.js';
 
 /**
  * Manages locomotive roster
@@ -94,6 +94,39 @@ export class RosterManager {
     }
 
     return results;
+  }
+
+  /**
+   * Get all roster groups
+   */
+  async getRosterGroups(): Promise<RosterGroup[]> {
+    const message: RosterGroupMessage = {
+      type: 'rosterGroup',
+      method: 'list'
+    };
+
+    const response = await this.client.request<RosterGroupMessage>(message);
+
+    if (!response.data) return [];
+    return response.data.map(wrapper => wrapper.data);
+  }
+
+  /**
+   * Get roster entries belonging to a specific group
+   */
+  async getRosterEntriesByGroup(group: string): Promise<RosterEntryWrapper[]> {
+    const message: RosterMessageWithParams = {
+      type: 'roster',
+      method: 'list',
+      params: { group }
+    };
+
+    const response = await this.client.request<RosterMessageWithParams>(message);
+
+    if (!response.data) return [];
+
+    const entries = response.data as RosterEntryWrapper[];
+    return entries.filter(e => e.type === 'rosterEntry');
   }
 
   /**

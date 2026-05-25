@@ -237,4 +237,56 @@ describe('RosterManager', () => {
       expect(rosterManager.getCachedRoster()).toEqual([]);
     });
   });
+
+  describe('getRosterGroups', () => {
+    it('should fetch and return all roster groups', async () => {
+      mockClient.request.mockResolvedValue({
+        type: 'rosterGroup',
+        data: [
+          { type: 'rosterGroup', data: { name: 'locos', length: 3 } },
+          { type: 'rosterGroup', data: { name: 'trams', length: 2 } }
+        ]
+      });
+
+      const groups = await rosterManager.getRosterGroups();
+
+      expect(groups).toHaveLength(2);
+      expect(groups[0].name).toBe('locos');
+      expect(groups[0].length).toBe(3);
+      expect(groups[1].name).toBe('trams');
+      expect(mockClient.request).toHaveBeenCalledWith({
+        type: 'rosterGroup',
+        method: 'list'
+      });
+    });
+  });
+
+  describe('getRosterEntriesByGroup', () => {
+    it('should fetch roster entries filtered by group', async () => {
+      mockClient.request.mockResolvedValue({
+        type: 'roster',
+        data: [mockRosterData[0], mockRosterData[1]]
+      });
+
+      const entries = await rosterManager.getRosterEntriesByGroup('locos');
+
+      expect(entries).toHaveLength(2);
+      expect(mockClient.request).toHaveBeenCalledWith({
+        type: 'roster',
+        method: 'list',
+        params: { group: 'locos' }
+      });
+    });
+
+    it('should return empty array when group has no entries', async () => {
+      mockClient.request.mockResolvedValue({
+        type: 'roster',
+        data: []
+      });
+
+      const entries = await rosterManager.getRosterEntriesByGroup('empty-group');
+
+      expect(entries).toEqual([]);
+    });
+  });
 });

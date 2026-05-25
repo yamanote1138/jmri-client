@@ -11,6 +11,7 @@ export interface JmriMessage {
   method?: 'get' | 'post' | 'put' | 'delete' | 'list';
   data?: any;
   id?: number;
+  params?: Record<string, string>;
 }
 
 /**
@@ -192,6 +193,29 @@ export interface RosterMessage extends JmriMessage {
  */
 export interface RosterData {
   [key: string]: RosterEntry;
+}
+
+export interface RosterGroup {
+  name: string;
+  length: number;
+}
+
+export interface RosterGroupWrapper {
+  type: 'rosterGroup';
+  data: RosterGroup;
+}
+
+export interface RosterGroupMessage extends JmriMessage {
+  type: 'rosterGroup';
+  method: 'list';
+  data?: RosterGroupWrapper[];
+}
+
+export interface RosterMessageWithParams extends JmriMessage {
+  type: 'roster';
+  method: 'list';
+  params?: { group: string };
+  data?: RosterResponse;
 }
 
 /**

@@ -141,6 +141,13 @@ const entry = await client.getRosterEntryByAddress(3);
 
 // Search roster
 const results = await client.searchRoster('steam');
+
+// Get all roster groups
+const groups: RosterGroup[] = await client.getRosterGroups();
+// [{ name: 'locos', length: 3 }, { name: 'trams', length: 2 }]
+
+// Get roster entries for a specific group
+const locos = await client.getRosterEntriesByGroup('locos');
 ```
 
 ## Light Control
@@ -267,6 +274,7 @@ import {
   LightState,
   LightData,
   RosterEntry,
+  RosterGroup,
   TurnoutState,
   TurnoutData,
   ThrottleState,

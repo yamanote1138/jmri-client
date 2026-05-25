@@ -165,6 +165,14 @@ describe('JmriClient', () => {
     it('should have searchRoster method', () => {
       expect(typeof client.searchRoster).toBe('function');
     });
+
+    it('should have getRosterGroups method', () => {
+      expect(typeof client.getRosterGroups).toBe('function');
+    });
+
+    it('should have getRosterEntriesByGroup method', () => {
+      expect(typeof client.getRosterEntriesByGroup).toBe('function');
+    });
   });
 
   describe('light control methods', () => {

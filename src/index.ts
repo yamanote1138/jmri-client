@@ -20,6 +20,7 @@ export {
   TurnoutState,
   LightState,
   RosterEntry,
+  RosterGroup,
   TurnoutData,
   LightData,
   JmriMessage,
