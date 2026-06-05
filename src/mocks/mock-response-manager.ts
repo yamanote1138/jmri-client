@@ -212,7 +212,7 @@ export class MockResponseManager {
       }
 
       // Update function keys
-      for (let i = 0; i <= 28; i++) {
+      for (let i = 0; i <= 68; i++) {
         const key = `F${i}`;
         if (data[key] !== undefined) {
           throttleState[key] = data[key];

@@ -284,7 +284,7 @@ describe('ThrottleManager', () => {
 
     it('should throw error for invalid function key', async () => {
       await expect(
-        throttleManager.setFunction('CSX754', 'F29' as any, true)
+        throttleManager.setFunction('CSX754', 'F69' as any, true)
       ).rejects.toThrow('Invalid function key');
     });
 

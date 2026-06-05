@@ -2,17 +2,18 @@ import { isThrottleFunctionKey, isValidSpeed } from '../../../src/types/throttle
 
 describe('throttle types', () => {
   describe('isThrottleFunctionKey', () => {
-    it('should return true for valid function keys F0-F28', () => {
+    it('should return true for valid function keys F0-F68', () => {
       expect(isThrottleFunctionKey('F0')).toBe(true);
       expect(isThrottleFunctionKey('F1')).toBe(true);
       expect(isThrottleFunctionKey('F10')).toBe(true);
-      expect(isThrottleFunctionKey('F20')).toBe(true);
       expect(isThrottleFunctionKey('F28')).toBe(true);
+      expect(isThrottleFunctionKey('F29')).toBe(true);
+      expect(isThrottleFunctionKey('F68')).toBe(true);
     });
 
     it('should return false for invalid function keys', () => {
-      expect(isThrottleFunctionKey('F29')).toBe(false);
-      expect(isThrottleFunctionKey('F30')).toBe(false);
+      expect(isThrottleFunctionKey('F69')).toBe(false);
+      expect(isThrottleFunctionKey('F100')).toBe(false);
       expect(isThrottleFunctionKey('F-1')).toBe(false);
       expect(isThrottleFunctionKey('F')).toBe(false);
       expect(isThrottleFunctionKey('G0')).toBe(false);

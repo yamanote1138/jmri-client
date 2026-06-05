@@ -88,7 +88,7 @@ export interface ThrottleData {
   release?: null;
   status?: string;
   prefix?: string;
-  // Function keys F0-F28
+  // Function keys F0-F68
   F0?: boolean;
   F1?: boolean;
   F2?: boolean;
@@ -118,6 +118,46 @@ export interface ThrottleData {
   F26?: boolean;
   F27?: boolean;
   F28?: boolean;
+  F29?: boolean;
+  F30?: boolean;
+  F31?: boolean;
+  F32?: boolean;
+  F33?: boolean;
+  F34?: boolean;
+  F35?: boolean;
+  F36?: boolean;
+  F37?: boolean;
+  F38?: boolean;
+  F39?: boolean;
+  F40?: boolean;
+  F41?: boolean;
+  F42?: boolean;
+  F43?: boolean;
+  F44?: boolean;
+  F45?: boolean;
+  F46?: boolean;
+  F47?: boolean;
+  F48?: boolean;
+  F49?: boolean;
+  F50?: boolean;
+  F51?: boolean;
+  F52?: boolean;
+  F53?: boolean;
+  F54?: boolean;
+  F55?: boolean;
+  F56?: boolean;
+  F57?: boolean;
+  F58?: boolean;
+  F59?: boolean;
+  F60?: boolean;
+  F61?: boolean;
+  F62?: boolean;
+  F63?: boolean;
+  F64?: boolean;
+  F65?: boolean;
+  F66?: boolean;
+  F67?: boolean;
+  F68?: boolean;
 }
 
 /**

@@ -157,7 +157,7 @@ export class ThrottleManager extends EventEmitter {
   }
 
   /**
-   * Set throttle function (F0-F28)
+   * Set throttle function (F0-F68)
    */
   async setFunction(throttleId: string, functionKey: ThrottleFunctionKey, value: boolean): Promise<void> {
     const state = this.throttles.get(throttleId);
@@ -263,7 +263,7 @@ export class ThrottleManager extends EventEmitter {
     }
 
     // Update functions
-    for (let i = 0; i <= 28; i++) {
+    for (let i = 0; i <= 68; i++) {
       const key = `F${i}` as ThrottleFunctionKey;
       if (message.data[key] !== undefined) {
         state.functions.set(key, message.data[key]!);

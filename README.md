@@ -12,7 +12,7 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 
 - ✅ **WebSocket-based** - Real-time bidirectional communication
 - ✅ **Event-driven** - Subscribe to power changes, throttle updates, and more
-- ✅ **Full Throttle Control** - Speed (0.0-1.0), direction, and functions (F0-F28)
+- ✅ **Full Throttle Control** - Speed (0.0-1.0), direction, and functions (F0-F68)
 - ✅ **Browser & Node.js** - Works in browsers and Node.js with auto-detection
 - ✅ **Mock Mode** - Test and demo without JMRI hardware
 - ✅ **Auto-reconnection** - Exponential backoff with jitter
