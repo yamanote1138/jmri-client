@@ -74,6 +74,10 @@
     "eventemitter3": "^5.0.4",
     "ws": "^8.21.0"
   },
+  "overrides": {
+    "js-yaml": "^3.15.0",
+    "@babel/core": "^7.29.6"
+  },
   "files": [
     "dist",
     "docs"
