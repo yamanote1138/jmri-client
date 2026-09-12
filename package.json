@@ -75,7 +75,7 @@
     "ws": "^8.21.0"
   },
   "overrides": {
-    "js-yaml": "^3.15.0",
+    "js-yaml": "^3.15.2",
     "@babel/core": "^7.29.6"
   },
   "files": [
