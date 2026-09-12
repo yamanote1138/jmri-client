@@ -140,6 +140,30 @@
    await client.setThrottleDirection(throttle, true);
    ```
 
+### Wrong Address After Acquiring Multiple Throttles
+
+**Symptoms:**
+- A throttle's reported address/status is briefly (or persistently) that of a different, earlier-requested locomotive
+- Only happens when acquiring several throttles in quick succession
+
+**Explanation:**
+- JMRI versions before 5.17.3 have a race in the JSON server's throttle handling: two `acquireThrottle()` requests arriving close together (e.g. fired without awaiting each one, such as via `Promise.all`) could have their replies crossed
+- Fixed upstream in JMRI 5.17.3
+
+**Solution:**
+```typescript
+// Await each acquisition before starting the next
+const loco1 = await client.acquireThrottle({ address: 3 });
+const loco2 = await client.acquireThrottle({ address: 754 });
+
+// Avoid this pattern on JMRI < 5.17.3:
+// const [loco1, loco2] = await Promise.all([
+//   client.acquireThrottle({ address: 3 }),
+//   client.acquireThrottle({ address: 754 })
+// ]);
+```
+Upgrading JMRI to 5.17.3 or later also resolves this.
+
 ### Throttle Lost on Reconnect
 
 **Symptoms:**

@@ -97,6 +97,7 @@ client.on('connected', async () => {
   await client.powerOn();
 
   // Control multiple locomotives
+  // Acquire sequentially, not with Promise.all -- see docs/TROUBLESHOOTING.md
   const loco1 = await client.acquireThrottle({ address: 3 });
   const loco2 = await client.acquireThrottle({ address: 754 });
 

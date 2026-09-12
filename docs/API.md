@@ -191,6 +191,8 @@ const throttleId = await client.acquireThrottle({ address: 3 });
 // Acquire throttle on a specific hardware connection
 const throttleId = await client.acquireThrottle({ address: 3, prefix: 'L' });
 
+// Await each acquireThrottle() call before the next -- see docs/TROUBLESHOOTING.md
+
 // Control speed (0.0 to 1.0)
 await client.setThrottleSpeed(throttleId, 0.0);   // Stopped
 await client.setThrottleSpeed(throttleId, 0.5);   // Half speed
