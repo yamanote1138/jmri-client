@@ -148,7 +148,7 @@
 
 **Explanation:**
 - JMRI versions before 5.17.3 have a race in the JSON server's throttle handling: two `acquireThrottle()` requests arriving close together (e.g. fired without awaiting each one, such as via `Promise.all`) could have their replies crossed
-- Fixed upstream in JMRI 5.17.3
+- Fixed upstream in the JMRI 5.17.3 test release. The 5.16 production release still has the race.
 
 **Solution:**
 ```typescript
@@ -162,7 +162,7 @@ const loco2 = await client.acquireThrottle({ address: 754 });
 //   client.acquireThrottle({ address: 754 })
 // ]);
 ```
-Upgrading JMRI to 5.17.3 or later also resolves this.
+Upgrading JMRI to 5.17.3 or later (or the next production release after 5.16) also resolves this.
 
 ### Throttle Lost on Reconnect
 

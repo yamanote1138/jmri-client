@@ -328,7 +328,11 @@ export class WebSocketClient extends EventEmitter {
    */
   private handleMessage(data: string): void {
     try {
-      const message: AnyJmriMessage = JSON.parse(data);
+      const parsed = JSON.parse(data);
+      // JMRI answers some lists (e.g. systemConnections) with a bare array carrying the id on each element
+      const message: AnyJmriMessage = Array.isArray(parsed)
+        ? { type: 'list', data: parsed, id: parsed[0]?.id } as any
+        : parsed;
       this.processMessage(message);
     } catch (error) {
       this.emit('error', new Error(`Failed to parse message: ${error}`));
