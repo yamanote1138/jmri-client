@@ -29,6 +29,7 @@ export class SystemConnectionsManager {
       return [];
     }
 
-    return Array.isArray(response.data) ? response.data : [response.data];
+    const entries: any[] = Array.isArray(response.data) ? response.data : [response.data];
+    return entries.map(r => r.data ?? r);
   }
 }
