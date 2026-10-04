@@ -28,11 +28,16 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 npm install jmri-client
 ```
 
-**Requirements:** Node.js 22+ · JMRI 5.0 or later (5.17.3+ recommended)
+**Requirements:** Node.js 22+ · JMRI 5.0 or later (5.16+ recommended)
 
-> `getSystemConnections()` and per-connection power/throttle prefix support require JMRI 5.15.7+. All other features work with any JMRI 5.x release.
->
-> Acquiring multiple throttles concurrently (e.g. without awaiting each `acquireThrottle()` call before starting the next) can return the wrong locomotive address on JMRI versions before 5.17.3, due to a race in JMRI's JSON throttle handling that was fixed in that release. Sequential acquisition (the pattern used throughout this library's docs) is unaffected on any JMRI 5.x version.
+| JMRI version | Status |
+|---|---|
+| 5.16 | Latest production release. Recommended. |
+| 5.17.3+ | Test releases. Supported. Includes the throttle race fix below. |
+| 5.15.7+ | Required for `getSystemConnections()` and per-connection power/throttle prefixes |
+| 5.0+ | Everything else works |
+
+> Acquiring multiple throttles concurrently (e.g. without awaiting each `acquireThrottle()` call before starting the next) can return the wrong locomotive address on JMRI versions before 5.17.3, including the 5.16 production release, due to a race in JMRI's JSON throttle handling. It's fixed in the 5.17.3 test release and should land in the next production release. Sequential acquisition (the pattern used throughout this library's docs) is unaffected on any JMRI 5.x version.
 
 ## Quick Start
 

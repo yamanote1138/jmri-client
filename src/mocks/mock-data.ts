@@ -7,7 +7,7 @@ export const mockData = {
   "hello": {
     "type": "hello",
     "data": {
-      "JMRI": "5.9.2",
+      "JMRI": "5.16",
       "json": "5.0",
       "version": "v5",
       "heartbeat": 13500,
