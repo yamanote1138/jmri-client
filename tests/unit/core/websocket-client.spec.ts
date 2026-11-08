@@ -118,3 +118,35 @@ describe('WebSocketClient response matching', () => {
     expect(response.data.state).toBe(2);
   });
 });
+
+describe('WebSocketClient in mock mode', () => {
+  let client: WebSocketClient;
+
+  beforeEach(() => {
+    client = new WebSocketClient(mergeOptions({
+      autoConnect: false,
+      heartbeat: { enabled: false },
+      mock: { enabled: true, responseDelay: 0 }
+    }));
+  });
+
+  it('does not emit a reply as an unsolicited update, like real JMRI', async () => {
+    const updates: any[] = [];
+    client.on('update', (m: any) => updates.push(m));
+
+    const response = await client.request({ type: 'turnout', data: { name: 'LT1' } } as any);
+
+    expect(response.data.name).toBe('LT1');
+    expect(updates).toEqual([]);
+  });
+
+  it('still reports the reply as a received message', async () => {
+    const received: any[] = [];
+    client.on('message:received', (m: any) => received.push(m));
+
+    await client.request({ type: 'turnout', data: { name: 'LT1' } } as any);
+
+    expect(received.map(m => m.type)).toEqual(['turnout']);
+  });
+});
+
