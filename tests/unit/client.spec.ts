@@ -131,6 +131,16 @@ describe('JmriClient', () => {
       (client as any).sensorManager.emit('sensor:changed', 'IS1', SensorState.ACTIVE);
     });
 
+    it('should forward sensor manager errors as client errors', (done) => {
+      const failure = new Error('resubscribe failed');
+      client.on('error', (error) => {
+        expect(error).toBe(failure);
+        done();
+      });
+
+      (client as any).sensorManager.emit('error', failure);
+    });
+
     it('should forward throttle events', (done) => {
       client.on('throttle:acquired', (id) => {
         expect(id).toBe('CSX754');

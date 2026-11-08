@@ -245,6 +245,9 @@ export class WebSocketClient extends EventEmitter {
     if (this.mockManager) {
       const response = await this.mockManager.getMockResponse(message);
       this.emit('message:sent', message);
+      if (response?.type === 'error') {
+        throw this.toJmriError(response);
+      }
       if (response) {
         this.processMessage(response as AnyJmriMessage);
       }
@@ -272,8 +275,8 @@ export class WebSocketClient extends EventEmitter {
         messageType: message.type
       };
 
-      // For throttle requests, store the throttle name for matching
-      if (message.type === 'throttle' && message.data && 'name' in message.data) {
+      // Named requests only accept id-less replies for the same name
+      if (message.data && typeof (message.data as any).name === 'string') {
         pendingRequest.matchKey = (message.data as any).name;
       }
 
@@ -363,7 +366,11 @@ export class WebSocketClient extends EventEmitter {
       if (pending) {
         clearTimeout(pending.timeout);
         this.pendingRequests.delete(message.id);
-        pending.resolve(message);
+        if (message.type === 'error') {
+          pending.reject(this.toJmriError(message));
+        } else {
+          pending.resolve(message);
+        }
         return;
       }
     }
@@ -371,31 +378,29 @@ export class WebSocketClient extends EventEmitter {
     // Handle responses without ID (like throttle responses from JMRI)
     // Match by message type and data
     if (message.id === undefined) {
+      const data = message.data as any;
+      const messageName = data?.throttle || data?.name;
       for (const [id, pending] of this.pendingRequests.entries()) {
-        // Match by type
-        if (pending.messageType === message.type) {
-          // For throttle messages, also match by throttle name
-          if (message.type === 'throttle' && pending.matchKey) {
-            const throttleName = (message.data as any)?.throttle || (message.data as any)?.name;
-            if (throttleName === pending.matchKey) {
-              clearTimeout(pending.timeout);
-              this.pendingRequests.delete(id);
-              pending.resolve(message);
-              return;
-            }
-          } else {
-            // For other message types, just match by type
-            clearTimeout(pending.timeout);
-            this.pendingRequests.delete(id);
-            pending.resolve(message);
-            return;
-          }
-        }
+        if (pending.messageType !== message.type) continue;
+        // Same type isn't enough: a named message must match the pending request's name
+        if (pending.matchKey !== undefined ? messageName !== pending.matchKey : messageName !== undefined) continue;
+        clearTimeout(pending.timeout);
+        this.pendingRequests.delete(id);
+        pending.resolve(message);
+        return;
       }
     }
 
     // Handle unsolicited updates (auto-subscriptions)
     this.emit('update', message);
+  }
+
+  /** Turn a JMRI error message into an Error carrying JMRI's code */
+  private toJmriError(message: any): Error & { code?: number } {
+    const data = message?.data ?? {};
+    const error: Error & { code?: number } = new Error(data.message ?? `JMRI error ${data.code ?? 'unknown'}`);
+    error.code = data.code;
+    return error;
   }
 
   /**

@@ -188,7 +188,7 @@ client.on('light:changed', (name: string, state: LightState) => {
 ## Sensor Control
 
 ```typescript
-// Get current sensor state (JMRI also starts sending you changes for it)
+// Get current sensor state; JMRI then sends you its changes (survives reconnects)
 const state: SensorState = await client.getSensor('IS1');
 
 // SensorState enum values (from JMRI JSON protocol):
@@ -202,7 +202,7 @@ await client.setSensor('IS1', SensorState.ACTIVE);
 await client.setSensorActive('IS1');    // Convenience method
 await client.setSensorInactive('IS1');  // Convenience method
 
-// List all sensors
+// List all sensors (does not subscribe; call getSensor for the ones you want to watch)
 const sensors: SensorData[] = await client.listSensors();
 for (const sensor of sensors) {
   console.log(`${sensor.userName ?? sensor.name}: ${sensorStateToString(sensor.state ?? SensorState.UNKNOWN)}`);
@@ -218,7 +218,7 @@ client.on('sensor:changed', (name: string, state: SensorState) => {
 });
 ```
 
-Setting is mostly useful for internal sensors (`IS...`). JMRI may refuse to set a hardware sensor, in which case the promise rejects with the server's error. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
+Setting is mostly useful for internal sensors (`IS...`). If JMRI refuses (for example, a hardware sensor it can't set, or a name that doesn't exist), the promise rejects with JMRI's message, and the error's `code` holds JMRI's status code. After a set, the cache and `sensor:changed` use the state JMRI reports back, which may not be the one you asked for. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
 
 ## Throttle Control
 

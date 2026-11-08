@@ -19,6 +19,11 @@ export interface MockResponseManagerOptions {
   initialPowerState?: PowerState;
 }
 
+/** Starting sensor states, taken from the mock sensor list */
+function initialSensorStates(): Map<string, SensorState> {
+  return new Map(mockData.sensor.list.map(entry => [entry.data.name, entry.data.state as SensorState]));
+}
+
 /**
  * Manages mock responses for JMRI protocol
  */
@@ -32,11 +37,7 @@ export class MockResponseManager {
     ['IL2', LightState.OFF],
     ['IL3', LightState.ON]
   ]);
-  private sensors: Map<string, SensorState> = new Map([
-    ['IS1', SensorState.INACTIVE],
-    ['IS2', SensorState.ACTIVE],
-    ['IS3', SensorState.INACTIVE]
-  ]);
+  private sensors: Map<string, SensorState> = initialSensorStates();
   private turnouts: Map<string, TurnoutState> = new Map([
     ['LT1', TurnoutState.CLOSED],
     ['LT2', TurnoutState.CLOSED],
@@ -322,9 +323,7 @@ export class MockResponseManager {
     this.powerState = state;
   }
 
-  /**
-   * Get sensor response (only ACTIVE/INACTIVE posts change state, like JMRI)
-   */
+  /** Get sensor response (only ACTIVE/INACTIVE posts change state, like JMRI) */
   private getSensorResponse(message: JmriMessage): SensorMessage | any {
     if (message.method === 'list') {
       return {
@@ -364,9 +363,7 @@ export class MockResponseManager {
     return this.lights;
   }
 
-  /**
-   * Get all sensor states (for testing)
-   */
+  /** Get all sensor states (for testing) */
   getSensors(): Map<string, SensorState> {
     return this.sensors;
   }
@@ -390,11 +387,7 @@ export class MockResponseManager {
       ['IL2', LightState.OFF],
       ['IL3', LightState.ON]
     ]);
-    this.sensors = new Map([
-      ['IS1', SensorState.INACTIVE],
-      ['IS2', SensorState.ACTIVE],
-      ['IS3', SensorState.INACTIVE]
-    ]);
+    this.sensors = initialSensorStates();
     this.turnouts = new Map([
       ['LT1', TurnoutState.CLOSED],
       ['LT2', TurnoutState.CLOSED],

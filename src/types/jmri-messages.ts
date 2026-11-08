@@ -354,9 +354,7 @@ export interface LightMessage extends JmriMessage {
   data?: LightData;
 }
 
-/**
- * Sensor states (JMRI JSON protocol values)
- */
+/** Sensor states (JMRI JSON protocol values) */
 export enum SensorState {
   UNKNOWN = 0,
   ACTIVE = 2,
@@ -364,14 +362,10 @@ export enum SensorState {
   INCONSISTENT = 8
 }
 
-/**
- * Sensor states a client is allowed to set
- */
+/** Sensor states a client is allowed to set */
 export type SettableSensorState = SensorState.ACTIVE | SensorState.INACTIVE;
 
-/**
- * Convert SensorState enum to human-readable string
- */
+/** Convert SensorState enum to human-readable string */
 export function sensorStateToString(state: SensorState): string {
   switch (state) {
     case SensorState.ACTIVE:
@@ -386,9 +380,7 @@ export function sensorStateToString(state: SensorState): string {
   }
 }
 
-/**
- * Sensor data structure
- */
+/** Sensor data structure */
 export interface SensorData {
   name: string;
   userName?: string | null;
@@ -398,9 +390,7 @@ export interface SensorData {
   state?: SensorState;
 }
 
-/**
- * Sensor message
- */
+/** Sensor message */
 export interface SensorMessage extends JmriMessage {
   type: 'sensor';
   data?: SensorData;

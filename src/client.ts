@@ -96,6 +96,7 @@ export class JmriClient extends EventEmitter {
     this.sensorManager.on('sensor:changed', (name: string, state: SensorState) =>
       this.emit('sensor:changed', name, state)
     );
+    this.sensorManager.on('error', (error: Error) => this.emit('error', error));
     this.throttleManager.on('throttle:acquired', (id: string) =>
       this.emit('throttle:acquired', id)
     );
@@ -363,51 +364,37 @@ export class JmriClient extends EventEmitter {
   // Sensor Control
   // ============================================================================
 
-  /**
-   * Get the current state of a sensor (also subscribes to future changes)
-   */
+  /** Get a sensor's current state; JMRI then pushes its changes */
   async getSensor(name: string): Promise<SensorState> {
     return this.sensorManager.getSensor(name);
   }
 
-  /**
-   * Set a sensor to ACTIVE or INACTIVE
-   */
+  /** Set a sensor to ACTIVE or INACTIVE */
   async setSensor(name: string, state: SettableSensorState): Promise<void> {
     return this.sensorManager.setSensor(name, state);
   }
 
-  /**
-   * Set a sensor to ACTIVE
-   */
+  /** Set a sensor to ACTIVE */
   async setSensorActive(name: string): Promise<void> {
     return this.sensorManager.setSensorActive(name);
   }
 
-  /**
-   * Set a sensor to INACTIVE
-   */
+  /** Set a sensor to INACTIVE */
   async setSensorInactive(name: string): Promise<void> {
     return this.sensorManager.setSensorInactive(name);
   }
 
-  /**
-   * List all sensors known to JMRI
-   */
+  /** List all sensors known to JMRI */
   async listSensors(): Promise<SensorData[]> {
     return this.sensorManager.listSensors();
   }
 
-  /**
-   * Get cached sensor state without a network request
-   */
+  /** Get cached sensor state without a network request */
   getSensorState(name: string): SensorState | undefined {
     return this.sensorManager.getSensorState(name);
   }
 
-  /**
-   * Get all cached sensor states
-   */
+  /** Get all cached sensor states */
   getCachedSensors(): Map<string, SensorState> {
     return this.sensorManager.getCachedSensors();
   }
