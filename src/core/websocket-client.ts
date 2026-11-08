@@ -250,7 +250,7 @@ export class WebSocketClient extends EventEmitter {
         throw this.toJmriError(response);
       }
       if (response) {
-        this.processMessage(response as AnyJmriMessage);
+        this.processMessage(response as AnyJmriMessage, true);
       }
       return response as T;
     }
@@ -348,7 +348,7 @@ export class WebSocketClient extends EventEmitter {
   /**
    * Process a parsed message (called by both real and mock mode)
    */
-  private processMessage(message: AnyJmriMessage): void {
+  private processMessage(message: AnyJmriMessage, isMockReply = false): void {
     this.emit('message:received', message);
 
     // Handle pong
@@ -394,6 +394,9 @@ export class WebSocketClient extends EventEmitter {
         return;
       }
     }
+
+    // A mock reply answers its request directly, so it isn't an unsolicited update
+    if (isMockReply) return;
 
     // Handle unsolicited updates (auto-subscriptions)
     this.emit('update', message);
