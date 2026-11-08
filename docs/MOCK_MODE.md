@@ -89,6 +89,8 @@ Three sample sensors:
 - **IS2** - Block 2 Occupancy (ACTIVE)
 - **IS3** - Yard Button (INACTIVE, inverted)
 
+Any other sensor name gets a 404 error, like real JMRI.
+
 ### Turnouts
 Three sample turnouts:
 - **LT1** - Main Diverge (CLOSED)

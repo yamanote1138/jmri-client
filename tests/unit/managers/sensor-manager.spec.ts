@@ -55,6 +55,37 @@ describe('SensorManager', () => {
       expect(state).toBe(SensorState.INCONSISTENT);
     });
 
+    it('should cache under the system name JMRI replies with when given a user name', async () => {
+      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'IS1', userName: 'Block 1', state: SensorState.ACTIVE } });
+
+      const state = await sensorManager.getSensor('Block 1');
+
+      expect(state).toBe(SensorState.ACTIVE);
+      expect(sensorManager.getSensorState('IS1')).toBe(SensorState.ACTIVE);
+      expect(sensorManager.getCachedSensors().has('Block 1')).toBe(false);
+    });
+
+    it('should emit sensor:changed when a fetch finds a different cached state', async () => {
+      mockClient.emit('update', { type: 'sensor', data: { name: 'IS2', state: SensorState.ACTIVE } });
+      const spy = jest.fn();
+      sensorManager.on('sensor:changed', spy);
+      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'IS2', state: SensorState.INACTIVE } });
+
+      await sensorManager.getSensor('IS2');
+
+      expect(spy).toHaveBeenCalledWith('IS2', SensorState.INACTIVE);
+    });
+
+    it('should not emit sensor:changed on the first fetch of a sensor', async () => {
+      const spy = jest.fn();
+      sensorManager.on('sensor:changed', spy);
+      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'IS1', state: SensorState.INACTIVE } });
+
+      await sensorManager.getSensor('IS1');
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
     it('should not cache anything when JMRI rejects the request', async () => {
       mockClient.request.mockRejectedValue(new Error('Unable to access sensor IS999.'));
 
@@ -316,6 +347,30 @@ describe('SensorManager', () => {
       expect(mockClient.request).toHaveBeenCalledWith({ type: 'sensor', data: { name: 'IS1' } });
     });
 
+    it('should fetch sensors that were only set, since JMRI subscribes on set too', async () => {
+      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'IS100', state: SensorState.ACTIVE } });
+      await sensorManager.setSensorActive('IS100');
+      mockClient.request.mockClear();
+
+      mockClient.emit('reconnected');
+      await flush();
+
+      expect(mockClient.request).toHaveBeenCalledWith({ type: 'sensor', data: { name: 'IS100' } });
+    });
+
+    it('should send all re-fetches without waiting for each reply', async () => {
+      mockClient.request.mockImplementation(async (m: any) => ({ type: 'sensor', data: { name: m.data.name, state: SensorState.INACTIVE } }));
+      await sensorManager.getSensor('IS1');
+      await sensorManager.getSensor('IS2');
+      mockClient.request.mockReset();
+      mockClient.request.mockReturnValue(new Promise(() => {}));
+
+      mockClient.emit('reconnected');
+      await flush();
+
+      expect(mockClient.request).toHaveBeenCalledTimes(2);
+    });
+
     it('should not subscribe to sensors that were only listed', async () => {
       mockClient.request.mockResolvedValue({
         type: 'sensor',
@@ -345,7 +400,7 @@ describe('SensorManager', () => {
     });
 
     it('should keep going when one sensor fails to refresh', async () => {
-      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'X', state: SensorState.INACTIVE } });
+      mockClient.request.mockImplementation(async (m: any) => ({ type: 'sensor', data: { name: m.data.name, state: SensorState.INACTIVE } }));
       await sensorManager.getSensor('IS1');
       await sensorManager.getSensor('IS2');
       mockClient.request.mockReset();

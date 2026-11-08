@@ -25,7 +25,7 @@ export class SensorManager extends EventEmitter {
     });
   }
 
-  /** Get a sensor's current state; JMRI then pushes its changes to this connection */
+  /** Get a sensor's state by system or user name; cached under the system name JMRI replies with */
   async getSensor(name: string): Promise<SensorState> {
     const message: SensorMessage = {
       type: 'sensor',
@@ -33,9 +33,15 @@ export class SensorManager extends EventEmitter {
     };
 
     const response = await this.client.request<SensorMessage>(message);
-    const state = response.data?.state ?? SensorState.UNKNOWN;
-    this.sensors.set(name, state);
-    this.subscribed.add(name);
+    const state = response?.data?.state ?? SensorState.UNKNOWN;
+    const systemName = response?.data?.name || name;
+    const known = this.sensors.has(systemName);
+    this.subscribed.add(systemName);
+    if (known) {
+      this.updateState(systemName, state);
+    } else {
+      this.sensors.set(systemName, state);
+    }
     return state;
   }
 
@@ -52,7 +58,9 @@ export class SensorManager extends EventEmitter {
     };
 
     const response = await this.client.request<SensorMessage>(message);
-    this.updateState(name, response?.data?.state ?? state);
+    const systemName = response?.data?.name || name;
+    this.subscribed.add(systemName);
+    this.updateState(systemName, response?.data?.state ?? state);
   }
 
   /** Set a sensor to ACTIVE */
@@ -96,16 +104,16 @@ export class SensorManager extends EventEmitter {
     return new Map(this.sensors);
   }
 
-  /** Re-fetch subscribed sensors so the new connection gets their changes again */
+  /** Re-fetch subscribed sensors at once so the new connection gets their changes again */
   private async resubscribe(): Promise<void> {
-    for (const name of this.subscribed) {
+    await Promise.all([...this.subscribed].map(async name => {
       try {
         const response = await this.client.request<SensorMessage>({ type: 'sensor', data: { name } });
         this.updateState(name, response?.data?.state ?? SensorState.UNKNOWN);
       } catch (error) {
         this.emit('error', error);
       }
-    }
+    }));
   }
 
   /** Handle unsolicited sensor state updates from JMRI */

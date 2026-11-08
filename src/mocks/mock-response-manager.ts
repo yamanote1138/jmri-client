@@ -340,6 +340,10 @@ export class MockResponseManager {
       return { type: 'sensor', data: { name: '', state: SensorState.UNKNOWN } };
     }
 
+    if (!this.sensors.has(name)) {
+      return { type: 'error', data: { code: 404, message: `Unable to access sensor ${name}.` } };
+    }
+
     const requested = message.data?.state;
     if (message.method === 'post' && (requested === SensorState.ACTIVE || requested === SensorState.INACTIVE)) {
       this.sensors.set(name, requested);

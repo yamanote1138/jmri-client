@@ -152,4 +152,13 @@ describe('MockResponseManager', () => {
       expect(manager.getSensors().get('IS1')).toBe(4);
     });
   });
+
+  describe('unknown sensors', () => {
+    it('should return a 404 error like JMRI does', async () => {
+      const response = await manager.getMockResponse({ type: 'sensor', data: { name: 'IS999' } });
+
+      expect(response!.type).toBe('error');
+      expect(response!.data.code).toBe(404);
+    });
+  });
 });
