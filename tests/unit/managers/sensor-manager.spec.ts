@@ -371,6 +371,38 @@ describe('SensorManager', () => {
       expect(mockClient.request).toHaveBeenCalledTimes(2);
     });
 
+    it('should stop re-fetching a sensor JMRI says no longer exists', async () => {
+      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'IS5', state: SensorState.INACTIVE } });
+      await sensorManager.getSensor('IS5');
+      const gone = Object.assign(new Error('Unable to access sensor IS5.'), { code: 404 });
+      mockClient.request.mockReset();
+      mockClient.request.mockRejectedValue(gone);
+      sensorManager.on('error', () => {});
+
+      mockClient.emit('reconnected');
+      await flush();
+      mockClient.emit('reconnected');
+      await flush();
+
+      expect(mockClient.request).toHaveBeenCalledTimes(1);
+      expect(sensorManager.getSensorState('IS5')).toBeUndefined();
+    });
+
+    it('should keep re-fetching after errors other than 404', async () => {
+      mockClient.request.mockResolvedValue({ type: 'sensor', data: { name: 'IS5', state: SensorState.INACTIVE } });
+      await sensorManager.getSensor('IS5');
+      mockClient.request.mockReset();
+      mockClient.request.mockRejectedValue(new Error('Request timeout after 10000ms'));
+      sensorManager.on('error', () => {});
+
+      mockClient.emit('reconnected');
+      await flush();
+      mockClient.emit('reconnected');
+      await flush();
+
+      expect(mockClient.request).toHaveBeenCalledTimes(2);
+    });
+
     it('should not subscribe to sensors that were only listed', async () => {
       mockClient.request.mockResolvedValue({
         type: 'sensor',

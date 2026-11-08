@@ -385,8 +385,8 @@ export class WebSocketClient extends EventEmitter {
       const messageName = data?.throttle || data?.name;
       for (const [id, pending] of this.pendingRequests.entries()) {
         if (pending.messageType !== message.type) continue;
-        // Named requests need the same name; lists never take a single named push
-        if (pending.matchKey !== undefined && messageName !== pending.matchKey) continue;
+        // JMRI echoes ids for named objects, so only throttle replies may match by name here
+        if (pending.matchKey !== undefined && (message.type !== 'throttle' || messageName !== pending.matchKey)) continue;
         if (pending.isList && messageName !== undefined) continue;
         clearTimeout(pending.timeout);
         this.pendingRequests.delete(id);

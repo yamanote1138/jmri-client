@@ -60,14 +60,28 @@ describe('WebSocketClient response matching', () => {
     expect(updates).toHaveLength(1);
   });
 
-  it('still matches an id-less reply to a pending request for the same name', async () => {
-    const message: any = { type: 'sensor', data: { name: 'IS1' } };
+  it('does not let a push for the same named object settle a pending request', async () => {
+    const updates: any[] = [];
+    client.on('update', (m: any) => updates.push(m));
+    const message: any = { type: 'sensor', method: 'post', data: { name: 'IS1', state: 2 } };
     const pending = client.request(message, 1000);
 
-    (client as any).handleMessage(JSON.stringify({ type: 'sensor', data: { name: 'IS1', state: 2 } }));
+    (client as any).handleMessage(JSON.stringify({ type: 'sensor', data: { name: 'IS1', state: 4 } }));
+    (client as any).handleMessage(JSON.stringify({ type: 'sensor', data: { name: 'IS1', state: 2 }, id: message.id }));
 
     const response = await pending;
     expect(response.data.state).toBe(2);
+    expect(updates.map(u => u.data.state)).toEqual([4]);
+  });
+
+  it('still matches an id-less throttle reply by throttle name', async () => {
+    const message: any = { type: 'throttle', data: { name: 'c1-3', address: 3 } };
+    const pending = client.request(message, 1000);
+
+    (client as any).handleMessage(JSON.stringify({ type: 'throttle', data: { throttle: 'c1-3', address: 3 } }));
+
+    const response = await pending;
+    expect(response.data.address).toBe(3);
   });
 
   it('rejects a request when JMRI replies with an error', async () => {

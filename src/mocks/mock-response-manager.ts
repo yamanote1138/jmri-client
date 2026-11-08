@@ -335,13 +335,15 @@ export class MockResponseManager {
       };
     }
 
-    const name = message.data?.name;
-    if (!name) {
+    const requestedName = message.data?.name;
+    if (!requestedName) {
       return { type: 'sensor', data: { name: '', state: SensorState.UNKNOWN } };
     }
 
+    const entry = mockData.sensor.list.find(e => e.data.name === requestedName || e.data.userName === requestedName);
+    const name = entry?.data.name ?? requestedName;
     if (!this.sensors.has(name)) {
-      return { type: 'error', data: { code: 404, message: `Unable to access sensor ${name}.` } };
+      return { type: 'error', data: { code: 404, message: `Unable to access sensor ${requestedName}.` } };
     }
 
     const requested = message.data?.state;
@@ -350,7 +352,7 @@ export class MockResponseManager {
     }
 
     const state = this.sensors.get(name) ?? SensorState.UNKNOWN;
-    return { type: 'sensor', data: { name, state } };
+    return { type: 'sensor', data: { name, userName: entry?.data.userName ?? null, inverted: entry?.data.inverted ?? false, state } };
   }
 
   /**

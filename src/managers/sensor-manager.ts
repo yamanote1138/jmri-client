@@ -111,6 +111,10 @@ export class SensorManager extends EventEmitter {
         const response = await this.client.request<SensorMessage>({ type: 'sensor', data: { name } });
         this.updateState(name, response?.data?.state ?? SensorState.UNKNOWN);
       } catch (error) {
+        if ((error as any)?.code === 404) {
+          this.subscribed.delete(name);
+          this.sensors.delete(name);
+        }
         this.emit('error', error);
       }
     }));
