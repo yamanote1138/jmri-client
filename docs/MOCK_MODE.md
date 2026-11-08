@@ -83,6 +83,12 @@ Three sample lights:
 - **IL2** - Platform Light (OFF)
 - **IL3** - Signal Lamp (ON)
 
+### Sensors
+Three sample sensors:
+- **IS1** - Block 1 Occupancy (INACTIVE)
+- **IS2** - Block 2 Occupancy (ACTIVE)
+- **IS3** - Yard Button (INACTIVE, inverted)
+
 ### Turnouts
 Three sample turnouts:
 - **LT1** - Main Diverge (CLOSED)
@@ -170,6 +176,7 @@ The mock system maintains state for realistic behavior:
 
 - **Power state** - Remembers if power is ON or OFF; tracked independently per connection prefix when one is supplied
 - **Light states** - Tracks ON/OFF state per light
+- **Sensor states** - Tracks ACTIVE/INACTIVE state per sensor (other posted states are ignored, like JMRI)
 - **Turnout states** - Tracks CLOSED/THROWN state per turnout
 - **Throttles** - Tracks acquired throttles and their states, including connection prefix
 - **Speed/Direction** - Maintains current speed and direction per throttle
@@ -217,6 +224,7 @@ Mock mode implements the full JMRI client API. All methods work identically:
 - ✅ `getRoster()` / `getRosterEntryByName()` / `getRosterEntryByAddress()` / `searchRoster()`
 - ✅ `getRosterGroups()` / `getRosterEntriesByGroup()`
 - ✅ `getLight()` / `setLight()` / `turnOnLight()` / `turnOffLight()` / `listLights()`
+- ✅ `getSensor()` / `setSensor()` / `setSensorActive()` / `setSensorInactive()` / `listSensors()`
 - ✅ `getTurnout()` / `setTurnout()` / `throwTurnout()` / `closeTurnout()` / `listTurnouts()`
 - ✅ `acquireThrottle()` / `releaseThrottle()` (with optional prefix)
 - ✅ `setThrottleSpeed()`

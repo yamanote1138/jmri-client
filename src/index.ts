@@ -19,14 +19,18 @@ export {
   PowerState,
   TurnoutState,
   LightState,
+  SensorState,
+  SettableSensorState,
   RosterEntry,
   RosterGroup,
   TurnoutData,
   LightData,
+  SensorData,
   JmriMessage,
   PowerMessage,
   TurnoutMessage,
   LightMessage,
+  SensorMessage,
   ThrottleMessage,
   RosterMessage,
 
@@ -42,7 +46,7 @@ export {
 
 // Export utility functions
 export { isThrottleFunctionKey, isValidSpeed } from './types/throttle.js';
-export { powerStateToString, turnoutStateToString, lightStateToString } from './types/jmri-messages.js';
+export { powerStateToString, turnoutStateToString, lightStateToString, sensorStateToString } from './types/jmri-messages.js';
 
 // Export mock system for testing and demo purposes
 export { MockResponseManager, mockResponseManager, mockData } from './mocks/index.js';

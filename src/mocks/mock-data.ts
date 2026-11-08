@@ -199,6 +199,13 @@ export const mockData = {
       { "type": "light", "data": { "name": "IL3", "userName": "Signal Lamp", "comment": null, "properties": [], "state": 2 } }
     ]
   },
+  "sensor": {
+    "list": [
+      { "type": "sensor", "data": { "name": "IS1", "userName": "Block 1 Occupancy", "comment": null, "properties": [], "inverted": false, "state": 4 } },
+      { "type": "sensor", "data": { "name": "IS2", "userName": "Block 2 Occupancy", "comment": null, "properties": [], "inverted": false, "state": 2 } },
+      { "type": "sensor", "data": { "name": "IS3", "userName": "Yard Button", "comment": null, "properties": [], "inverted": true, "state": 4 } }
+    ]
+  },
   "turnout": {
     "list": [
       { "type": "turnout", "data": { "name": "LT1", "userName": "Main Diverge", "state": 2 } },

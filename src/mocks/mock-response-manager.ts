@@ -3,7 +3,7 @@
  * Generates mock JMRI responses for testing and demo purposes
  */
 
-import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage, LightState, LightMessage } from '../types/jmri-messages.js';
+import { JmriMessage, PowerState, PowerMessage, ThrottleMessage, HelloMessage, PongMessage, GoodbyeMessage, TurnoutState, TurnoutMessage, LightState, LightMessage, SensorState, SensorMessage } from '../types/jmri-messages.js';
 import { mockData } from './mock-data.js';
 
 export interface MockResponseManagerOptions {
@@ -31,6 +31,11 @@ export class MockResponseManager {
     ['IL1', LightState.OFF],
     ['IL2', LightState.OFF],
     ['IL3', LightState.ON]
+  ]);
+  private sensors: Map<string, SensorState> = new Map([
+    ['IS1', SensorState.INACTIVE],
+    ['IS2', SensorState.ACTIVE],
+    ['IS3', SensorState.INACTIVE]
   ]);
   private turnouts: Map<string, TurnoutState> = new Map([
     ['LT1', TurnoutState.CLOSED],
@@ -74,6 +79,9 @@ export class MockResponseManager {
 
       case 'turnout':
         return this.getTurnoutResponse(message);
+
+      case 'sensor':
+        return this.getSensorResponse(message);
 
       case 'ping':
         return this.getPingResponse();
@@ -315,6 +323,34 @@ export class MockResponseManager {
   }
 
   /**
+   * Get sensor response (only ACTIVE/INACTIVE posts change state, like JMRI)
+   */
+  private getSensorResponse(message: JmriMessage): SensorMessage | any {
+    if (message.method === 'list') {
+      return {
+        type: 'sensor',
+        data: mockData.sensor.list.map(entry => ({
+          type: 'sensor',
+          data: { ...entry.data, properties: [], state: this.sensors.get(entry.data.name) ?? entry.data.state }
+        }))
+      };
+    }
+
+    const name = message.data?.name;
+    if (!name) {
+      return { type: 'sensor', data: { name: '', state: SensorState.UNKNOWN } };
+    }
+
+    const requested = message.data?.state;
+    if (message.method === 'post' && (requested === SensorState.ACTIVE || requested === SensorState.INACTIVE)) {
+      this.sensors.set(name, requested);
+    }
+
+    const state = this.sensors.get(name) ?? SensorState.UNKNOWN;
+    return { type: 'sensor', data: { name, state } };
+  }
+
+  /**
    * Get all throttles (for testing)
    */
   getThrottles(): Map<string, any> {
@@ -326,6 +362,13 @@ export class MockResponseManager {
    */
   getLights(): Map<string, LightState> {
     return this.lights;
+  }
+
+  /**
+   * Get all sensor states (for testing)
+   */
+  getSensors(): Map<string, SensorState> {
+    return this.sensors;
   }
 
   /**
@@ -346,6 +389,11 @@ export class MockResponseManager {
       ['IL1', LightState.OFF],
       ['IL2', LightState.OFF],
       ['IL3', LightState.ON]
+    ]);
+    this.sensors = new Map([
+      ['IS1', SensorState.INACTIVE],
+      ['IS2', SensorState.ACTIVE],
+      ['IS3', SensorState.INACTIVE]
     ]);
     this.turnouts = new Map([
       ['LT1', TurnoutState.CLOSED],
