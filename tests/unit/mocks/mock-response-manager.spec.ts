@@ -152,4 +152,29 @@ describe('MockResponseManager', () => {
       expect(manager.getSensors().get('IS1')).toBe(4);
     });
   });
+
+  describe('unknown sensors', () => {
+    it('should return a 404 error like JMRI does', async () => {
+      const response = await manager.getMockResponse({ type: 'sensor', data: { name: 'IS999' } });
+
+      expect(response!.type).toBe('error');
+      expect(response!.data.code).toBe(404);
+    });
+  });
+
+  describe('sensor user names', () => {
+    it('should resolve a user name to the system name like JMRI does', async () => {
+      const response = await manager.getMockResponse({ type: 'sensor', data: { name: 'Block 1 Occupancy' } });
+
+      expect(response!.type).toBe('sensor');
+      expect(response!.data.name).toBe('IS1');
+      expect(response!.data.userName).toBe('Block 1 Occupancy');
+    });
+
+    it('should set a sensor by user name', async () => {
+      await manager.getMockResponse({ type: 'sensor', method: 'post', data: { name: 'Block 1 Occupancy', state: 2 } });
+
+      expect(manager.getSensors().get('IS1')).toBe(2);
+    });
+  });
 });
