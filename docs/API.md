@@ -153,10 +153,43 @@ const groups: RosterGroup[] = await client.getRosterGroups();
 const locos = await client.getRosterEntriesByGroup('locos');
 ```
 
+## Turnout Control
+
+```typescript
+// Get current turnout state; JMRI then sends you its changes
+const state: TurnoutState = await client.getTurnout('LT1');
+
+// TurnoutState enum values (from JMRI JSON protocol):
+// TurnoutState.UNKNOWN = 0       (state cannot be determined)
+// TurnoutState.CLOSED = 2        (straight through / normal)
+// TurnoutState.THROWN = 4        (diverging route)
+// TurnoutState.INCONSISTENT = 8  (feedback disagrees, e.g. still moving)
+
+// Set turnout state
+await client.setTurnout('LT1', TurnoutState.THROWN);
+await client.throwTurnout('LT1');  // Convenience method
+await client.closeTurnout('LT1');  // Convenience method
+
+// List all turnouts (does not subscribe; call getTurnout for the ones you want to watch)
+const turnouts: TurnoutData[] = await client.listTurnouts();
+for (const turnout of turnouts) {
+  console.log(`${turnout.userName ?? turnout.name}: ${turnoutStateToString(turnout.state ?? TurnoutState.UNKNOWN)}`);
+}
+
+// Cached state (no network request)
+const cachedState = client.getTurnoutState('LT1');
+const allCached = client.getCachedTurnouts();
+
+// Listen for turnout changes
+client.on('turnout:changed', (name: string, state: TurnoutState) => {
+  console.log(`Turnout ${name} is now ${turnoutStateToString(state)}`);
+});
+```
+
 ## Light Control
 
 ```typescript
-// Get current light state
+// Get current light state; JMRI then sends you its changes
 const state: LightState = await client.getLight('IL1');
 
 // LightState enum values (from JMRI JSON protocol):
@@ -169,7 +202,7 @@ await client.setLight('IL1', LightState.ON);
 await client.turnOnLight('IL1');   // Convenience method
 await client.turnOffLight('IL1');  // Convenience method
 
-// List all lights
+// List all lights (does not subscribe; call getLight for the ones you want to watch)
 const lights: LightData[] = await client.listLights();
 for (const light of lights) {
   console.log(`${light.userName}: ${light.state === LightState.ON ? 'ON' : 'OFF'}`);
@@ -188,7 +221,7 @@ client.on('light:changed', (name: string, state: LightState) => {
 ## Sensor Control
 
 ```typescript
-// Get current sensor state; JMRI then sends you its changes (survives reconnects)
+// Get current sensor state; JMRI then sends you its changes
 const state: SensorState = await client.getSensor('IS1');
 
 // SensorState enum values (from JMRI JSON protocol):
@@ -218,7 +251,17 @@ client.on('sensor:changed', (name: string, state: SensorState) => {
 });
 ```
 
-You can pass a system name (`IS1`) or a user name (`Block 1`), but the cache and `sensor:changed` always use the system name JMRI replies with, so check `getSensorState('IS1')`, not `getSensorState('Block 1')`. Setting is mostly useful for internal sensors (`IS...`). If JMRI refuses (for example, a hardware sensor it can't set, or a name that doesn't exist), the promise rejects with JMRI's message, and the error's `code` holds JMRI's status code. After a set, the cache and `sensor:changed` use the state JMRI reports back, which may not be the one you asked for. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
+Setting is mostly useful for internal sensors (`IS...`); JMRI may refuse to set a hardware sensor. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
+
+## How Turnouts, Lights, and Sensors Behave
+
+These three work the same way:
+
+- **Watching changes:** `getTurnout`, `getLight`, `getSensor` and the `set...` methods tell JMRI to send you that object's changes. `list...` doesn't.
+- **Reconnects:** after a reconnect, everything you've fetched or set is fetched again, so changes keep coming. Anything that changed while you were disconnected fires its change event. If JMRI says an object no longer exists, it's dropped and the client emits `error`.
+- **Names:** you can pass a system name (`LT1`) or a user name (`Main Diverge`), but the cache and change events always use the system name JMRI replies with. So check `getTurnoutState('LT1')`, not `getTurnoutState('Main Diverge')`. JMRI itself recommends system names.
+- **After a set:** the cache and change event use the state JMRI reports back, which may not be the one you asked for. For example, a turnout with feedback may report `INCONSISTENT` while it's still moving.
+- **Errors:** if JMRI refuses a request (a name that doesn't exist, a hardware sensor it won't set), the promise rejects with JMRI's message, and the error's `code` holds JMRI's status code.
 
 ## Throttle Control
 
@@ -284,7 +327,7 @@ const state = client.getConnectionState();
 ## Utility Functions
 
 ```typescript
-import { powerStateToString, lightStateToString, sensorStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
+import { powerStateToString, turnoutStateToString, lightStateToString, sensorStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
 
 // Convert PowerState enum to readable string
 const stateStr = powerStateToString(PowerState.ON);  // 'ON'

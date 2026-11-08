@@ -96,7 +96,9 @@ export class JmriClient extends EventEmitter {
     this.sensorManager.on('sensor:changed', (name: string, state: SensorState) =>
       this.emit('sensor:changed', name, state)
     );
-    this.sensorManager.on('error', (error: Error) => this.emit('error', error));
+    for (const manager of [this.lightManager, this.turnoutManager, this.sensorManager]) {
+      manager.on('error', (error: Error) => this.emit('error', error));
+    }
     this.throttleManager.on('throttle:acquired', (id: string) =>
       this.emit('throttle:acquired', id)
     );

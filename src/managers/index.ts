@@ -6,6 +6,7 @@ export * from './power-manager.js';
 export * from './roster-manager.js';
 export * from './throttle-manager.js';
 export * from './turnout-manager.js';
+export * from './named-object-manager.js';
 export * from './light-manager.js';
 export * from './sensor-manager.js';
 export * from './system-connections-manager.js';
