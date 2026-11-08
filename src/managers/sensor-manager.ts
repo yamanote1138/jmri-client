@@ -1,48 +1,18 @@
 // Sensor manager
 
-import { EventEmitter } from 'eventemitter3';
 import { WebSocketClient } from '../core/websocket-client.js';
-import { SensorState, SettableSensorState, SensorData, SensorMessage } from '../types/jmri-messages.js';
+import { SensorState, SettableSensorState, SensorData } from '../types/jmri-messages.js';
+import { NamedObjectManager } from './named-object-manager.js';
 
 /** Manages JMRI sensor state */
-export class SensorManager extends EventEmitter {
-  private client: WebSocketClient;
-  private sensors: Map<string, SensorState> = new Map();
-  private subscribed: Set<string> = new Set();
-
+export class SensorManager extends NamedObjectManager<SensorState, SensorData> {
   constructor(client: WebSocketClient) {
-    super();
-    this.client = client;
-
-    this.client.on('update', (message: any) => {
-      if (message.type === 'sensor') {
-        this.handleSensorUpdate(message);
-      }
-    });
-
-    this.client.on('reconnected', () => {
-      void this.resubscribe();
-    });
+    super(client, 'sensor', 'sensor:changed', SensorState.UNKNOWN);
   }
 
   /** Get a sensor's state by system or user name; cached under the system name JMRI replies with */
   async getSensor(name: string): Promise<SensorState> {
-    const message: SensorMessage = {
-      type: 'sensor',
-      data: { name }
-    };
-
-    const response = await this.client.request<SensorMessage>(message);
-    const state = response?.data?.state ?? SensorState.UNKNOWN;
-    const systemName = response?.data?.name || name;
-    const known = this.sensors.has(systemName);
-    this.subscribed.add(systemName);
-    if (known) {
-      this.updateState(systemName, state);
-    } else {
-      this.sensors.set(systemName, state);
-    }
-    return state;
+    return this.fetchState(name);
   }
 
   /** Set a sensor to ACTIVE or INACTIVE (JMRI ignores any other state) */
@@ -50,17 +20,7 @@ export class SensorManager extends EventEmitter {
     if (state !== SensorState.ACTIVE && state !== SensorState.INACTIVE) {
       throw new Error(`Sensor state must be ACTIVE or INACTIVE, got ${state}`);
     }
-
-    const message: SensorMessage = {
-      type: 'sensor',
-      method: 'post',
-      data: { name, state }
-    };
-
-    const response = await this.client.request<SensorMessage>(message);
-    const systemName = response?.data?.name || name;
-    this.subscribed.add(systemName);
-    this.updateState(systemName, response?.data?.state ?? state);
+    return this.postState(name, state);
   }
 
   /** Set a sensor to ACTIVE */
@@ -75,68 +35,16 @@ export class SensorManager extends EventEmitter {
 
   /** List all sensors known to JMRI (does not subscribe to their changes) */
   async listSensors(): Promise<SensorData[]> {
-    const message: SensorMessage = {
-      type: 'sensor',
-      method: 'list'
-    };
-
-    const response = await this.client.request<any>(message);
-    const entries: SensorData[] = Array.isArray(response?.data)
-      ? response.data.map((r: any) => r.data ?? r)
-      : [];
-
-    for (const entry of entries) {
-      if (entry.name && entry.state !== undefined) {
-        this.sensors.set(entry.name, entry.state);
-      }
-    }
-
-    return entries;
+    return this.listAll();
   }
 
   /** Get cached sensor state without a network request */
   getSensorState(name: string): SensorState | undefined {
-    return this.sensors.get(name);
+    return this.cachedState(name);
   }
 
   /** Get all cached sensor states */
   getCachedSensors(): Map<string, SensorState> {
-    return new Map(this.sensors);
-  }
-
-  /** Re-fetch subscribed sensors at once so the new connection gets their changes again */
-  private async resubscribe(): Promise<void> {
-    await Promise.all([...this.subscribed].map(async name => {
-      try {
-        const response = await this.client.request<SensorMessage>({ type: 'sensor', data: { name } });
-        this.updateState(name, response?.data?.state ?? SensorState.UNKNOWN);
-      } catch (error) {
-        if ((error as any)?.code === 404) {
-          this.subscribed.delete(name);
-          this.sensors.delete(name);
-        }
-        this.emit('error', error);
-      }
-    }));
-  }
-
-  /** Handle unsolicited sensor state updates from JMRI */
-  private handleSensorUpdate(message: SensorMessage): void {
-    const name = message.data?.name;
-    const state = message.data?.state;
-
-    if (!name || state === undefined) return;
-
-    this.updateState(name, state);
-  }
-
-  /** Cache a state and emit sensor:changed if it differs */
-  private updateState(name: string, state: SensorState): void {
-    const oldState = this.sensors.get(name);
-    this.sensors.set(name, state);
-
-    if (oldState !== state) {
-      this.emit('sensor:changed', name, state);
-    }
+    return this.cachedStates();
   }
 }

@@ -141,6 +141,16 @@ describe('JmriClient', () => {
       (client as any).sensorManager.emit('error', failure);
     });
 
+    it.each(['lightManager', 'turnoutManager'])('should forward %s errors as client errors', (manager) => {
+      const failure = new Error('resubscribe failed');
+      const spy = jest.fn();
+      client.on('error', spy);
+
+      (client as any)[manager].emit('error', failure);
+
+      expect(spy).toHaveBeenCalledWith(failure);
+    });
+
     it('should forward throttle events', (done) => {
       client.on('throttle:acquired', (id) => {
         expect(id).toBe('CSX754');
