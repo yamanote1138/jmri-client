@@ -83,4 +83,24 @@ describe('WebSocketClient response matching', () => {
     await expect(pending).rejects.toThrow('Unable to access sensor IS999.');
     await pending.catch((e: any) => expect(e.code).toBe(404));
   });
+
+  it('matches an id-less throttle reply to a request that names the throttle as data.throttle', async () => {
+    const message: any = { type: 'throttle', data: { throttle: 'c1-3', release: null } };
+    const pending = client.request(message, 1000);
+
+    (client as any).handleMessage(JSON.stringify({ type: 'throttle', data: { throttle: 'c1-3', release: null } }));
+
+    const response = await pending;
+    expect(response.data.throttle).toBe('c1-3');
+  });
+
+  it('still matches an id-less reply by type when the request names nothing', async () => {
+    const message: any = { type: 'power', data: { state: 0, prefix: 'L' } };
+    const pending = client.request(message, 1000);
+
+    (client as any).handleMessage(JSON.stringify({ type: 'power', data: { name: 'LocoNet', state: 2 } }));
+
+    const response = await pending;
+    expect(response.data.state).toBe(2);
+  });
 });

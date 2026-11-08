@@ -218,7 +218,7 @@ client.on('sensor:changed', (name: string, state: SensorState) => {
 });
 ```
 
-Setting is mostly useful for internal sensors (`IS...`). If JMRI refuses (for example, a hardware sensor it can't set, or a name that doesn't exist), the promise rejects with JMRI's message, and the error's `code` holds JMRI's status code. After a set, the cache and `sensor:changed` use the state JMRI reports back, which may not be the one you asked for. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
+You can pass a system name (`IS1`) or a user name (`Block 1`), but the cache and `sensor:changed` always use the system name JMRI replies with, so check `getSensorState('IS1')`, not `getSensorState('Block 1')`. Setting is mostly useful for internal sensors (`IS...`). If JMRI refuses (for example, a hardware sensor it can't set, or a name that doesn't exist), the promise rejects with JMRI's message, and the error's `code` holds JMRI's status code. After a set, the cache and `sensor:changed` use the state JMRI reports back, which may not be the one you asked for. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
 
 ## Throttle Control
 

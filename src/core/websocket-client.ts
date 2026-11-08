@@ -23,6 +23,7 @@ interface PendingRequest {
   timeout: NodeJS.Timeout;
   messageType?: string;
   matchKey?: string;
+  isList?: boolean;
 }
 
 /**
@@ -272,12 +273,14 @@ export class WebSocketClient extends EventEmitter {
         resolve,
         reject,
         timeout: timeoutHandle,
-        messageType: message.type
+        messageType: message.type,
+        isList: message.method === 'list'
       };
 
       // Named requests only accept id-less replies for the same name
-      if (message.data && typeof (message.data as any).name === 'string') {
-        pendingRequest.matchKey = (message.data as any).name;
+      const requestName = (message.data as any)?.name ?? (message.data as any)?.throttle;
+      if (typeof requestName === 'string') {
+        pendingRequest.matchKey = requestName;
       }
 
       this.pendingRequests.set(id, pendingRequest);
@@ -382,8 +385,9 @@ export class WebSocketClient extends EventEmitter {
       const messageName = data?.throttle || data?.name;
       for (const [id, pending] of this.pendingRequests.entries()) {
         if (pending.messageType !== message.type) continue;
-        // Same type isn't enough: a named message must match the pending request's name
-        if (pending.matchKey !== undefined ? messageName !== pending.matchKey : messageName !== undefined) continue;
+        // Named requests need the same name; lists never take a single named push
+        if (pending.matchKey !== undefined && messageName !== pending.matchKey) continue;
+        if (pending.isList && messageName !== undefined) continue;
         clearTimeout(pending.timeout);
         this.pendingRequests.delete(id);
         pending.resolve(message);
