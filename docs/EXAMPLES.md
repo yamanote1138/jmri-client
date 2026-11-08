@@ -145,6 +145,36 @@ client.on('light:changed', (name, state) => {
 });
 ```
 
+## Sensor Monitoring
+
+```typescript
+import { JmriClient, SensorState, sensorStateToString } from 'jmri-client';
+
+const client = new JmriClient({ host: 'jmri.local', port: 12080 });
+
+client.on('connected', async () => {
+  // List all sensors (this does not subscribe to their changes)
+  const sensors = await client.listSensors();
+  console.log(`Found ${sensors.length} sensors`);
+
+  // Call getSensor on each one you want to hear changes from
+  for (const sensor of sensors) {
+    const state = await client.getSensor(sensor.name);
+    console.log(`${sensor.userName ?? sensor.name} is ${sensorStateToString(state)}`);
+  }
+
+  // Flip an internal sensor (e.g. to trigger a Logix/LogixNG)
+  await client.setSensorActive('IS100');
+});
+
+// Fires for every sensor you've called getSensor on
+client.on('sensor:changed', (name, state) => {
+  if (state === SensorState.ACTIVE) {
+    console.log(`${name} went active`);
+  }
+});
+```
+
 ## Roster Search
 
 ```typescript

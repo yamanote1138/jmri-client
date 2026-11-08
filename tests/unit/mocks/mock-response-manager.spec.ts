@@ -112,4 +112,44 @@ describe('MockResponseManager', () => {
       expect(response!.data.prefix).toBeUndefined();
     });
   });
+
+  describe('sensors', () => {
+    it('should list sensors with state and inverted flag', async () => {
+      const response = await manager.getMockResponse({ type: 'sensor', method: 'list' });
+
+      const sensors = response!.data as Array<{ type: string; data: { name: string; inverted: boolean; state: number } }>;
+      expect(response!.type).toBe('sensor');
+      expect(sensors.length).toBeGreaterThan(0);
+      expect(sensors[0].type).toBe('sensor');
+      expect(typeof sensors[0].data.inverted).toBe('boolean');
+    });
+
+    it('should return the state of a known sensor', async () => {
+      const response = await manager.getMockResponse({ type: 'sensor', data: { name: 'IS1' } });
+
+      expect(response!.data.name).toBe('IS1');
+      expect(response!.data.state).toBe(4); // INACTIVE
+    });
+
+    it('should remember a posted state', async () => {
+      await manager.getMockResponse({ type: 'sensor', method: 'post', data: { name: 'IS1', state: 2 } });
+      const response = await manager.getMockResponse({ type: 'sensor', data: { name: 'IS1' } });
+
+      expect(response!.data.state).toBe(2); // ACTIVE
+    });
+
+    it('should ignore posts of UNKNOWN like JMRI does', async () => {
+      await manager.getMockResponse({ type: 'sensor', method: 'post', data: { name: 'IS1', state: 0 } });
+      const response = await manager.getMockResponse({ type: 'sensor', data: { name: 'IS1' } });
+
+      expect(response!.data.state).toBe(4); // still INACTIVE
+    });
+
+    it('should reset sensor states', async () => {
+      await manager.getMockResponse({ type: 'sensor', method: 'post', data: { name: 'IS1', state: 2 } });
+      manager.reset();
+
+      expect(manager.getSensors().get('IS1')).toBe(4);
+    });
+  });
 });

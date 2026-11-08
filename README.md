@@ -12,6 +12,7 @@ WebSocket client for [JMRI](http://jmri.sourceforge.net/) with real-time updates
 
 - ✅ **WebSocket-based** - Real-time bidirectional communication
 - ✅ **Event-driven** - Subscribe to power changes, throttle updates, and more
+- ✅ **Layout objects** - Turnouts, lights, and sensors (get, set, list, and live change events)
 - ✅ **Full Throttle Control** - Speed (0.0-1.0), direction, and functions (F0-F68)
 - ✅ **Browser & Node.js** - Works in browsers and Node.js with auto-detection
 - ✅ **Mock Mode** - Test and demo without JMRI hardware
@@ -132,7 +133,7 @@ When no prefix is supplied the command routes to JMRI's default connection manag
 
 ### Extending JmriClient
 
-`JmriClient` exposes its `wsClient` as `protected`, so you can subclass it to add support for JMRI object types not yet built in (e.g., sensors, lights, routes, blocks):
+`JmriClient` exposes its `wsClient` as `protected`, so you can subclass it to add support for JMRI object types not yet built in (e.g., routes, blocks, reporters):
 
 ```typescript
 import { JmriClient } from 'jmri-client';
@@ -144,14 +145,14 @@ class MyExtendedClient extends JmriClient {
 
     // this.wsClient is available — use it to send/receive JMRI JSON messages
     this.wsClient.on('update', (message: any) => {
-      if (message.type === 'sensor') {
-        this.emit('sensor:changed', message.data.name, message.data.state);
+      if (message.type === 'block') {
+        this.emit('block:changed', message.data.name, message.data.state);
       }
     });
   }
 
-  async listSensors() {
-    const response = await this.wsClient.request({ type: 'sensor', method: 'list' });
+  async listBlocks() {
+    const response = await this.wsClient.request({ type: 'block', method: 'list' });
     return Array.isArray(response?.data)
       ? response.data.map((r: any) => r.data ?? r)
       : [];

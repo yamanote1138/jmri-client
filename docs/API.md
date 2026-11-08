@@ -48,6 +48,9 @@ client.on('turnout:changed', (name: string, state: TurnoutState) => { });
 // Light events
 client.on('light:changed', (name: string, state: LightState) => { });
 
+// Sensor events
+client.on('sensor:changed', (name: string, state: SensorState) => { });
+
 // Throttle events
 client.on('throttle:acquired', (throttleId: string) => { });
 client.on('throttle:updated', (throttleId: string, data: any) => { });
@@ -182,6 +185,41 @@ client.on('light:changed', (name: string, state: LightState) => {
 });
 ```
 
+## Sensor Control
+
+```typescript
+// Get current sensor state; JMRI then sends you its changes (survives reconnects)
+const state: SensorState = await client.getSensor('IS1');
+
+// SensorState enum values (from JMRI JSON protocol):
+// SensorState.UNKNOWN = 0       (state cannot be determined)
+// SensorState.ACTIVE = 2        (sensor is active, e.g. block occupied)
+// SensorState.INACTIVE = 4      (sensor is inactive)
+// SensorState.INCONSISTENT = 8  (hardware reports conflicting state)
+
+// Set sensor state (only ACTIVE and INACTIVE can be set; anything else throws)
+await client.setSensor('IS1', SensorState.ACTIVE);
+await client.setSensorActive('IS1');    // Convenience method
+await client.setSensorInactive('IS1');  // Convenience method
+
+// List all sensors (does not subscribe; call getSensor for the ones you want to watch)
+const sensors: SensorData[] = await client.listSensors();
+for (const sensor of sensors) {
+  console.log(`${sensor.userName ?? sensor.name}: ${sensorStateToString(sensor.state ?? SensorState.UNKNOWN)}`);
+}
+
+// Get cached state (no network request)
+const cachedState = client.getSensorState('IS1');
+const allCached = client.getCachedSensors();
+
+// Listen for sensor changes
+client.on('sensor:changed', (name: string, state: SensorState) => {
+  console.log(`Sensor ${name} is now ${sensorStateToString(state)}`);
+});
+```
+
+Setting is mostly useful for internal sensors (`IS...`). If JMRI refuses (for example, a hardware sensor it can't set, or a name that doesn't exist), the promise rejects with JMRI's message, and the error's `code` holds JMRI's status code. After a set, the cache and `sensor:changed` use the state JMRI reports back, which may not be the one you asked for. `SensorData.inverted` tells you whether JMRI has the sensor inverted; the reported state already accounts for it.
+
 ## Throttle Control
 
 ```typescript
@@ -246,7 +284,7 @@ const state = client.getConnectionState();
 ## Utility Functions
 
 ```typescript
-import { powerStateToString, lightStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
+import { powerStateToString, lightStateToString, sensorStateToString, isThrottleFunctionKey, isValidSpeed } from 'jmri-client';
 
 // Convert PowerState enum to readable string
 const stateStr = powerStateToString(PowerState.ON);  // 'ON'
@@ -254,6 +292,9 @@ const stateStr2 = powerStateToString(PowerState.UNKNOWN);  // 'UNKNOWN'
 
 // Convert LightState enum to readable string
 const lightStr = lightStateToString(LightState.ON);  // 'ON'
+
+// Convert SensorState enum to readable string
+const sensorStr = sensorStateToString(SensorState.ACTIVE);  // 'ACTIVE'
 
 // Validate throttle function key
 isThrottleFunctionKey('F0');  // true
@@ -275,6 +316,9 @@ import {
   PowerState,
   LightState,
   LightData,
+  SensorState,
+  SettableSensorState,
+  SensorData,
   RosterEntry,
   RosterGroup,
   TurnoutState,

@@ -1,5 +1,5 @@
 import { JmriClient } from '../../src/client';
-import { PowerState, LightState } from '../../src/types/jmri-messages';
+import { PowerState, LightState, SensorState } from '../../src/types/jmri-messages';
 import { ConnectionState } from '../../src/types/events';
 
 // Mock WebSocket
@@ -121,6 +121,26 @@ describe('JmriClient', () => {
       (client as any).lightManager.emit('light:changed', 'IL1', LightState.ON);
     });
 
+    it('should forward sensor:changed event', (done) => {
+      client.on('sensor:changed', (name, state) => {
+        expect(name).toBe('IS1');
+        expect(state).toBe(SensorState.ACTIVE);
+        done();
+      });
+
+      (client as any).sensorManager.emit('sensor:changed', 'IS1', SensorState.ACTIVE);
+    });
+
+    it('should forward sensor manager errors as client errors', (done) => {
+      const failure = new Error('resubscribe failed');
+      client.on('error', (error) => {
+        expect(error).toBe(failure);
+        done();
+      });
+
+      (client as any).sensorManager.emit('error', failure);
+    });
+
     it('should forward throttle events', (done) => {
       client.on('throttle:acquired', (id) => {
         expect(id).toBe('CSX754');
@@ -202,6 +222,36 @@ describe('JmriClient', () => {
 
     it('should have getCachedLights method', () => {
       expect(typeof client.getCachedLights).toBe('function');
+    });
+  });
+
+  describe('sensor control methods', () => {
+    it('should have getSensor method', () => {
+      expect(typeof client.getSensor).toBe('function');
+    });
+
+    it('should have setSensor method', () => {
+      expect(typeof client.setSensor).toBe('function');
+    });
+
+    it('should have setSensorActive method', () => {
+      expect(typeof client.setSensorActive).toBe('function');
+    });
+
+    it('should have setSensorInactive method', () => {
+      expect(typeof client.setSensorInactive).toBe('function');
+    });
+
+    it('should have listSensors method', () => {
+      expect(typeof client.listSensors).toBe('function');
+    });
+
+    it('should have getSensorState method', () => {
+      expect(typeof client.getSensorState).toBe('function');
+    });
+
+    it('should have getCachedSensors method', () => {
+      expect(typeof client.getCachedSensors).toBe('function');
     });
   });
 

@@ -354,6 +354,48 @@ export interface LightMessage extends JmriMessage {
   data?: LightData;
 }
 
+/** Sensor states (JMRI JSON protocol values) */
+export enum SensorState {
+  UNKNOWN = 0,
+  ACTIVE = 2,
+  INACTIVE = 4,
+  INCONSISTENT = 8
+}
+
+/** Sensor states a client is allowed to set */
+export type SettableSensorState = SensorState.ACTIVE | SensorState.INACTIVE;
+
+/** Convert SensorState enum to human-readable string */
+export function sensorStateToString(state: SensorState): string {
+  switch (state) {
+    case SensorState.ACTIVE:
+      return 'ACTIVE';
+    case SensorState.INACTIVE:
+      return 'INACTIVE';
+    case SensorState.INCONSISTENT:
+      return 'INCONSISTENT';
+    case SensorState.UNKNOWN:
+    default:
+      return 'UNKNOWN';
+  }
+}
+
+/** Sensor data structure */
+export interface SensorData {
+  name: string;
+  userName?: string | null;
+  comment?: string | null;
+  properties?: any[];
+  inverted?: boolean;
+  state?: SensorState;
+}
+
+/** Sensor message */
+export interface SensorMessage extends JmriMessage {
+  type: 'sensor';
+  data?: SensorData;
+}
+
 /**
  * Ping message (heartbeat)
  */

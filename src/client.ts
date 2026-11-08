@@ -9,9 +9,10 @@ import { RosterManager } from './managers/roster-manager.js';
 import { ThrottleManager } from './managers/throttle-manager.js';
 import { TurnoutManager } from './managers/turnout-manager.js';
 import { LightManager } from './managers/light-manager.js';
+import { SensorManager } from './managers/sensor-manager.js';
 import { SystemConnectionsManager } from './managers/system-connections-manager.js';
 import { JmriClientOptions, PartialClientOptions, mergeOptions } from './types/client-options.js';
-import { PowerState, RosterEntryWrapper, RosterGroup, TurnoutState, TurnoutData, LightState, LightData, SystemConnectionData } from './types/jmri-messages.js';
+import { PowerState, RosterEntryWrapper, RosterGroup, TurnoutState, TurnoutData, LightState, LightData, SensorState, SettableSensorState, SensorData, SystemConnectionData } from './types/jmri-messages.js';
 import { ConnectionState } from './types/events.js';
 import { ThrottleAcquireOptions, ThrottleFunctionKey, ThrottleState } from './types/throttle.js';
 
@@ -27,6 +28,7 @@ export class JmriClient extends EventEmitter {
   private throttleManager: ThrottleManager;
   private turnoutManager: TurnoutManager;
   private lightManager: LightManager;
+  private sensorManager: SensorManager;
   private systemConnectionsManager: SystemConnectionsManager;
 
   /**
@@ -60,6 +62,7 @@ export class JmriClient extends EventEmitter {
     this.throttleManager = new ThrottleManager(this.wsClient);
     this.turnoutManager = new TurnoutManager(this.wsClient);
     this.lightManager = new LightManager(this.wsClient);
+    this.sensorManager = new SensorManager(this.wsClient);
     this.systemConnectionsManager = new SystemConnectionsManager(this.wsClient);
 
     // Forward events from WebSocket client
@@ -90,6 +93,10 @@ export class JmriClient extends EventEmitter {
     this.lightManager.on('light:changed', (name: string, state: LightState) =>
       this.emit('light:changed', name, state)
     );
+    this.sensorManager.on('sensor:changed', (name: string, state: SensorState) =>
+      this.emit('sensor:changed', name, state)
+    );
+    this.sensorManager.on('error', (error: Error) => this.emit('error', error));
     this.throttleManager.on('throttle:acquired', (id: string) =>
       this.emit('throttle:acquired', id)
     );
@@ -351,6 +358,45 @@ export class JmriClient extends EventEmitter {
    */
   getCachedLights(): Map<string, LightState> {
     return this.lightManager.getCachedLights();
+  }
+
+  // ============================================================================
+  // Sensor Control
+  // ============================================================================
+
+  /** Get a sensor's current state; JMRI then pushes its changes */
+  async getSensor(name: string): Promise<SensorState> {
+    return this.sensorManager.getSensor(name);
+  }
+
+  /** Set a sensor to ACTIVE or INACTIVE */
+  async setSensor(name: string, state: SettableSensorState): Promise<void> {
+    return this.sensorManager.setSensor(name, state);
+  }
+
+  /** Set a sensor to ACTIVE */
+  async setSensorActive(name: string): Promise<void> {
+    return this.sensorManager.setSensorActive(name);
+  }
+
+  /** Set a sensor to INACTIVE */
+  async setSensorInactive(name: string): Promise<void> {
+    return this.sensorManager.setSensorInactive(name);
+  }
+
+  /** List all sensors known to JMRI */
+  async listSensors(): Promise<SensorData[]> {
+    return this.sensorManager.listSensors();
+  }
+
+  /** Get cached sensor state without a network request */
+  getSensorState(name: string): SensorState | undefined {
+    return this.sensorManager.getSensorState(name);
+  }
+
+  /** Get all cached sensor states */
+  getCachedSensors(): Map<string, SensorState> {
+    return this.sensorManager.getCachedSensors();
   }
 
   // ============================================================================
